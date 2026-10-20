@@ -35,8 +35,10 @@ ARCHIVOS_ESPERADOS = (
     + ["profile.txt", "description.txt", "documentation.txt"]
 )
 
-CLASE_POR_COOLER = {3: 0, 20: 1, 100: 2}
-NOMBRE_CLASE = {0: "falla_cercana", 1: "eficiencia_reducida", 2: "eficiencia_total"}
+# Objetivo: presion del acumulador hidraulico (bar), 4 clases ordenadas de menor a mayor presion.
+OBJETIVO = "accumulator"
+CLASE_POR_OBJETIVO = {90: 0, 100: 1, 115: 2, 130: 3}
+NOMBRE_CLASE = {0: "falla_cercana", 1: "muy_reducida", 2: "algo_reducida", 3: "optima"}
 
 N_PLIEGUES = 5
 PLIEGUE_PRUEBA = 3

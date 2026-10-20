@@ -1,6 +1,6 @@
 """Construye data/processed/features.csv: 4 estadisticos por sensor y ciclo (68 variables).
 
-Columnas de salida: cycle_id, group_id, cooler (%), clase (0/1/2) y las 68 variables.
+Columnas de salida: cycle_id, group_id, accumulator (bar), clase (0/1/2/3) y las 68 variables.
 La extraccion es fila a fila y no usa etiquetas, asi que no hay fuga de informacion.
 """
 import numpy as np
@@ -37,8 +37,8 @@ def main() -> None:
         {
             "cycle_id": np.arange(n),
             "group_id": combinacion.astype("category").cat.codes.astype(int),
-            "cooler": perfil["cooler"],
-            "clase": perfil["cooler"].map(config.CLASE_POR_COOLER),
+            config.OBJETIVO: perfil[config.OBJETIVO],
+            "clase": perfil[config.OBJETIVO].map(config.CLASE_POR_OBJETIVO),
         }
     )
     features = pd.concat(

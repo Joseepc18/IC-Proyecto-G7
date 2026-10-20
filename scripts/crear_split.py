@@ -40,8 +40,8 @@ def main() -> None:
     split.to_csv(config.RUTA_SPLIT, index=False)
 
     for nombre, idx in (("train", idx_train), ("test", idx_test)):
-        conteo = np.bincount(y[idx], minlength=3).tolist()
-        print(f"{nombre}: {len(idx)} ciclos, clases [0, 1, 2] = {conteo}")
+        conteo = np.bincount(y[idx], minlength=4).tolist()
+        print(f"{nombre}: {len(idx)} ciclos, clases [0, 1, 2, 3] = {conteo}")
     print(f"Guardado {config.RUTA_SPLIT}")
 
 

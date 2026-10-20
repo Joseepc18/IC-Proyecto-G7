@@ -5,7 +5,7 @@ from ic_g7 import config
 
 
 def cargar_features() -> pd.DataFrame:
-    """Columnas: cycle_id, group_id, cooler, clase y las 68 variables de entrada."""
+    """Columnas: cycle_id, group_id, accumulator, clase y las 68 variables de entrada."""
     if not config.RUTA_FEATURES.exists():
         raise FileNotFoundError(
             "Falta features.csv. Ejecuta: python scripts/descargar_datos.py "
