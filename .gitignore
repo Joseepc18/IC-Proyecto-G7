@@ -16,3 +16,7 @@ data/raw/
 Thumbs.db
 .vscode/
 .idea/
+
+# Generado por script
+data/processed/features.csv
+*.egg-info/
