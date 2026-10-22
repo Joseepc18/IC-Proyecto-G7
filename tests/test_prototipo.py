@@ -92,6 +92,26 @@ class PruebasPrototipo(unittest.TestCase):
         probas = resultado[["90 bar (%)", "100 bar (%)", "115 bar (%)", "130 bar (%)"]]
         np.testing.assert_allclose(probas.sum(axis=1), 100)
 
+    def test_baja_confianza_segun_umbral(self):
+        class ModeloFijo:
+            classes_ = np.array([0, 1, 2, 3])
+
+            def predict_proba(self, X):
+                return np.array([
+                    [0.40, 0.30, 0.20, 0.10],
+                    [config.UMBRAL_CONFIANZA, 0.20, 0.10, 0.10],
+                    [0.05, 0.05, 0.05, 0.85],
+                ])[:len(X)]
+
+            def predict(self, X):
+                return self.classes_[self.predict_proba(X).argmax(axis=1)]
+
+        resultado = predecir_provisional(ModeloFijo(), self.X.head(3))
+        self.assertEqual(resultado["Baja confianza"].tolist(), [True, False, False])
+        # El Dummy provisional siempre tiene probabilidad 1, nunca baja confianza.
+        real = predecir_provisional(self.modelo, self.X.head(3))
+        self.assertFalse(real["Baja confianza"].any())
+
     def test_interfaz_ejemplo_prediccion_y_cambio_de_origen(self):
         app = AppTest.from_file(str(config.RAIZ / "app" / "app.py")).run(timeout=30)
         self.assertEqual(len(app.exception), 0)

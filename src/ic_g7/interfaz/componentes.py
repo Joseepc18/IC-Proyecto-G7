@@ -16,7 +16,6 @@ TRAZOS = {
     "subir": '<path d="M12 16V3m-5 5 5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/>',
     "revision": '<path d="M4 20V10m6 10V4m6 16v-7m5 7H2"/>',
     "check": '<circle cx="12" cy="12" r="9"/><path d="m7 12 3 3 7-7"/>',
-    "info": '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>',
 }
 
 
@@ -36,6 +35,7 @@ def icono(nombre, clase=""):
 
 
 def cabecera():
+    *primeras, ultima = config.CLASE_POR_OBJETIVO
     st.html(
         '<div class="ui-encabezado"><div><h1>Estado del acumulador hidráulico</h1>'
         '<p>Carga un ciclo de sensores para evaluar el estado del acumulador.</p>'
@@ -45,9 +45,10 @@ def cabecera():
             f'<div class="ui-estadistica"><span class="ui-icon-box">{icono(ico)}</span>'
             f'<div><strong>{valor}</strong><span>{texto}</span></div></div>'
             for ico, valor, texto in [
-                ("sensor", "17", "sensores"),
-                ("tabla", "68", "características"),
-                ("acumulador", "4", "categorías: 90, 100, 115 y 130 bar"),
+                ("sensor", len(config.SENSORES), "sensores"),
+                ("tabla", len(config.COLUMNAS_ENTRADA), "características"),
+                ("acumulador", len(config.CLASE_POR_OBJETIVO),
+                 f"categorías: {', '.join(map(str, primeras))} y {ultima} bar"),
             ]
         )
         + "</div>"
