@@ -1,0 +1,13 @@
+modelo,real_bar,pred_90,pred_100,pred_115,pred_130
+Random Forest por defecto,90,356,88,25,217
+Random Forest por defecto,100,47,245,25,0
+Random Forest por defecto,115,18,39,242,18
+Random Forest por defecto,130,39,11,20,437
+Random Forest ajustado,90,358,92,23,213
+Random Forest ajustado,100,37,250,30,0
+Random Forest ajustado,115,18,37,243,19
+Random Forest ajustado,130,34,11,11,451
+MLP por defecto (Dayron),90,448,61,172,5
+MLP por defecto (Dayron),100,20,258,38,1
+MLP por defecto (Dayron),115,1,81,207,28
+MLP por defecto (Dayron),130,3,13,75,416

@@ -41,6 +41,8 @@ src/ic_g7/
   config.py                    Rutas, clases, semilla y columnas compartidas
   datos.py                     Carga de entrenamiento y prueba
   evaluacion.py                Validación cruzada y métricas
+  pipeline.py                  Preparación común dentro de cada pliegue
+  experimentos_dayron.py        Random Forest con búsqueda y MLP base
   prototipo.py                 Validación del CSV y modelo Dummy
   interfaz/                    Componentes visuales y carga del tema
 scripts/                       Descarga y preparación de los datos
@@ -52,7 +54,7 @@ data/
 notebooks/                     Espacio para análisis y experimentos
 models/                        Destino del modelo final y las etiquetas
 reports/                       Resultados y figuras
-tests/                        Comprobaciones del prototipo
+tests/                         Comprobaciones de datos, modelos y prototipo
 requirements.txt               Dependencias del proyecto
 pyproject.toml                 Configuración del paquete local
 README.md                      Descripción e instrucciones de uso
@@ -88,6 +90,59 @@ El archivo se rechaza completo, sin predicción, si:
 
 La app muestra el motivo del rechazo y, cuando corresponde, el registro y la
 columna afectados. Los rangos se calculan exclusivamente con entrenamiento.
+
+## Experimentos de Random Forest y MLP
+
+El aporte de Dayron está en
+[04_modelos_dayron.ipynb](notebooks/04_modelos_dayron.ipynb). Contiene el
+procedimiento explicado, las salidas ejecutadas y las limitaciones de la comparación.
+La lógica se reutiliza desde `src/ic_g7/experimentos_dayron.py`.
+
+Con el entorno y los datos preparados, ejecutar **el notebook completo o el script**:
+
+```powershell
+& ".\.venv\Scripts\python.exe" scripts/entrenar_modelos_dayron.py
+```
+
+Se evalúan Random Forest por defecto, Random Forest ajustado y MLP por defecto,
+usando solo los **1827 ciclos de entrenamiento**, la partición compartida y los
+cinco pliegues por grupos. Todos usan `crear_pipeline` y `validar_cruzado`.
+La MLP conserva los valores predeterminados salvo `max_iter=4000` y la semilla
+de `config.py`, como acordó José.
+
+La búsqueda de RF prueba 27 combinaciones: `n_estimators` en 100, 200 y 300;
+`max_depth` en `None`, 10 y 20; `min_samples_leaf` en 1, 2 y 4.
+Se selecciona por F1 macro. La ejecución es en serie, con un hilo BLAS;
+el hardware, las versiones, el coste de búsqueda y los hashes de datos y
+partición quedan en `reports/entorno_dayron.json`.
+
+El experimento genera únicamente sus archivos en `reports/`:
+
+| Archivo | Contenido |
+|---|---|
+| `resultados_dayron.csv` | Tres filas con las columnas de la tabla común. |
+| `pliegues_dayron.csv` | F1 macro, exactitud y ROC-AUC de cada pliegue. |
+| `metricas_clase_dayron.csv` | Precisión, recall, F1 y soporte de cada categoría. |
+| `matrices_confusion_dayron.csv` | Recuentos reales frente a predichos, en bar. |
+| `predicciones_oof_dayron.csv` | Predicción y probabilidades de cada ciclo excluido del ajuste de su pliegue. |
+| `busqueda_rf_dayron.csv` | Las 27 configuraciones evaluadas y sus puntuaciones y tiempos. |
+| `figuras/matrices_confusion_dayron.png` | Las tres matrices de confusión. |
+
+Las OOF agrupan los ciclos de validación; sus métricas por clase no son el promedio
+entre pliegues. `indice_entrenamiento` identifica la posición dentro de
+`cargar_entrenamiento()`, no el ciclo original. Las probabilidades todavía no
+están calibradas. La MLP base de Dayron reproduce la configuración de José con
+semilla 42: **no debe contarse como otro método ni como una repetición independiente**.
+
+La selección de hiperparámetros y la comparación reutilizan los pliegues; las
+cifras del RF ajustado pueden tener sesgo de selección. Son resultados de
+validación, no de prueba ni una selección definitiva. Los tiempos por modelo
+no incluyen la búsqueda ni la segunda pasada OOF; el coste de búsqueda se informa
+por separado. Las diferencias pequeñas no prueban superioridad ni equivalencia.
+
+Esta ejecución no consulta prueba, no exporta el modelo final y no modifica
+Streamlit ni la tabla consolidada. La evaluación única en prueba y la integración
+del modelo y del umbral corresponden a las siguientes etapas del equipo.
 
 ## Tabla de resultados
 

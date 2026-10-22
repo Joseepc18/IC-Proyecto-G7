@@ -1,0 +1,66 @@
+{
+  "fecha_utc": "2026-10-22T21:42:12.053954+00:00",
+  "sistema": "Windows-11-10.0.26200-SP0",
+  "procesador": "Intel64 Family 6 Model 154 Stepping 3, GenuineIntel",
+  "cpu_logicos": 12,
+  "ram_gib": 15.7,
+  "python": "3.12.14",
+  "versiones": {
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "psutil": "7.2.2",
+    "threadpoolctl": "3.7.0"
+  },
+  "semilla": 42,
+  "mlp_max_iter": 4000,
+  "pliegues": 5,
+  "ciclos_entrenamiento": 1827,
+  "variables_entrada": 68,
+  "grupos_entrenamiento": 111,
+  "clases_entrenamiento": {
+    "0": 686,
+    "1": 317,
+    "2": 317,
+    "3": 507
+  },
+  "split_sha256": "0a992a308ccd7f1ee4cd9fd385c926c549f2a278e2510a5cb3b21da462cad4e7",
+  "features_sha256": "a52ded85869eb0c351ff044b57320467e95d7fbd942ef833d9054c2e733081c4",
+  "n_jobs": 1,
+  "limite_hilos_blas": 1,
+  "bibliotecas_numericas": [
+    {
+      "internal_api": "openblas",
+      "version": "0.3.34.106.0",
+      "num_threads": 1,
+      "threading_layer": "pthreads"
+    },
+    {
+      "internal_api": "openmp",
+      "version": null,
+      "num_threads": 1,
+      "threading_layer": null
+    },
+    {
+      "internal_api": "openblas",
+      "version": "0.3.31.dev",
+      "num_threads": 1,
+      "threading_layer": "pthreads"
+    }
+  ],
+  "candidatos_rf": 27,
+  "ajustes_busqueda_rf": 135,
+  "mejores_parametros_rf": {
+    "modelo__max_depth": null,
+    "modelo__min_samples_leaf": 2,
+    "modelo__n_estimators": 300
+  },
+  "f1_cv_busqueda_rf": 0.7148048319576832,
+  "segundos_busqueda_rf": 243.9258519000141,
+  "segundos_experimento": 357.65507110004546,
+  "avisos_convergencia": 0,
+  "conjunto_prueba_evaluado": false,
+  "alcance": "CV de entrenamiento; la búsqueda y la comparación reutilizan los pliegues. Las OOF del RF ajustado no son una evaluación independiente de su selección. Los tiempos por modelo no incluyen la búsqueda ni la segunda pasada OOF."
+}
