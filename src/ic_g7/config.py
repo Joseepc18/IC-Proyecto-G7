@@ -12,6 +12,13 @@ RUTA_FEATURES = DIR_PROCESADO / "features.csv"
 RUTA_SPLIT = DIR_PROCESADO / "split.csv"
 DIR_MODELOS = RAIZ / "models"
 DIR_REPORTES = RAIZ / "reports"
+# Tabla unica (contrato, seccion 6): cada persona escribe resultados_<nombre>.csv
+# y scripts/consolidar_resultados.py genera RUTA_RESULTADOS uniendolos.
+RUTA_RESULTADOS = DIR_REPORTES / "resultados.csv"
+COLUMNAS_RESULTADOS = [
+    "modelo", "hiperparámetros", "F1_macro_CV (media±std)", "exactitud_CV",
+    "ROC_AUC_CV", "t_entrenamiento", "t_inferencia",
+]
 
 URL_DATOS = (
     "https://archive.ics.uci.edu/static/public/447/"
