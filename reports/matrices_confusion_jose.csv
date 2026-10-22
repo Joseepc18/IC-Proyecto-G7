@@ -1,0 +1,37 @@
+modelo,real_bar,pred_90,pred_100,pred_115,pred_130
+MLP defecto (semilla 42),90,448,61,172,5
+MLP defecto (semilla 42),100,20,258,38,1
+MLP defecto (semilla 42),115,1,81,207,28
+MLP defecto (semilla 42),130,3,13,75,416
+MLP+RandomizedSearchCV (semilla 42),90,520,58,106,2
+MLP+RandomizedSearchCV (semilla 42),100,23,268,25,1
+MLP+RandomizedSearchCV (semilla 42),115,3,24,258,32
+MLP+RandomizedSearchCV (semilla 42),130,1,4,62,440
+MLP+GA (semilla 42),90,551,60,73,2
+MLP+GA (semilla 42),100,17,265,34,1
+MLP+GA (semilla 42),115,2,27,261,27
+MLP+GA (semilla 42),130,9,8,53,437
+MLP defecto (semilla 43),90,456,79,148,3
+MLP defecto (semilla 43),100,40,249,28,0
+MLP defecto (semilla 43),115,16,54,215,32
+MLP defecto (semilla 43),130,2,15,83,407
+MLP+RandomizedSearchCV (semilla 43),90,566,62,57,1
+MLP+RandomizedSearchCV (semilla 43),100,19,266,32,0
+MLP+RandomizedSearchCV (semilla 43),115,2,35,246,34
+MLP+RandomizedSearchCV (semilla 43),130,9,6,53,439
+MLP+GA (semilla 43),90,566,56,63,1
+MLP+GA (semilla 43),100,19,266,30,2
+MLP+GA (semilla 43),115,1,39,251,26
+MLP+GA (semilla 43),130,8,12,66,421
+MLP defecto (semilla 44),90,440,70,173,3
+MLP defecto (semilla 44),100,23,250,44,0
+MLP defecto (semilla 44),115,2,57,232,26
+MLP defecto (semilla 44),130,9,11,73,414
+MLP+RandomizedSearchCV (semilla 44),90,513,44,129,0
+MLP+RandomizedSearchCV (semilla 44),100,17,267,33,0
+MLP+RandomizedSearchCV (semilla 44),115,0,28,257,32
+MLP+RandomizedSearchCV (semilla 44),130,6,15,54,432
+MLP+GA (semilla 44),90,586,59,35,6
+MLP+GA (semilla 44),100,20,258,38,1
+MLP+GA (semilla 44),115,1,36,250,30
+MLP+GA (semilla 44),130,4,3,60,440
