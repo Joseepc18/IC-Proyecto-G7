@@ -32,6 +32,19 @@ a ambos lados. Dentro del entrenamiento se usó `StratifiedGroupKFold` con cinco
 pliegues y semilla 42. El conjunto de prueba no se consultó durante la
 preparación, la exploración ni la búsqueda de hiperparámetros.
 
+Los archivos originales contienen una serie de mediciones **dentro** de cada
+ciclo de 60 segundos. Para esta tarea, cada ciclo se resume en una fila de 68
+estadísticos; el clasificador no recibe el orden de los ciclos ni variables
+rezagadas y no intenta pronosticar el siguiente instante. El PDF de la
+asignatura pide separación temporal cuando se trabaja con series temporales.
+El equipo acordó mantener `split.csv` por grupos porque aquí se evalúa la
+clasificación de ciclos bajo **combinaciones de estados de componentes no
+vistas**. La misma combinación puede aparecer en bloques temporales distintos;
+separar por orden de los ciclos o por bloque permitiría que apareciera en
+entrenamiento y prueba. Este diseño comprueba generalización entre
+configuraciones, pero no mide explícitamente el desempeño en ciclos futuros de
+la misma instalación.
+
 En entrenamiento se encontraron 686 ciclos de 90 bar, 317 de 100 bar, 317 de
 115 bar y 507 de 130 bar. No hubo valores nulos, no finitos ni filas de sensores
 idénticas. Cuatro columnas (`PS2_min`, `PS3_min`, `FS1_min` y `SE_min`) fueron
@@ -99,6 +112,13 @@ entrenamiento; las cifras de CV pueden ser optimistas por selección de modelo.
 La comprobación independiente será la evaluación única sobre la prueba
 reservada, una vez tomada la decisión conjunta.
 
+Para el criterio de éxito (c), las tres corridas del GA se compararán con las
+tres de búsqueda aleatoria bajo el mismo presupuesto de evaluaciones y con la
+dispersión de la validación cruzada. Solo se afirmará una mejora si la
+diferencia supera el umbral fijado por el contrato. En caso contrario se
+informará que **no se observó una mejora clara**, sin afirmar equivalencia
+estadística. Aún no se dispone de esos resultados.
+
 El error más delicado es presentar como menos grave un acumulador de 90 bar.
 En las predicciones fuera de pliegue, la SVM asignó **69 de esos 686 ciclos a
 130 bar** (10,1 %), la clase óptima. Un técnico podría retrasar una inspección
@@ -121,10 +141,8 @@ la coexistencia de fallas de otros componentes, la concentración de ciclos en
 tres grupos grandes y el solapamiento de mediciones entre niveles de presión.
 Las variables virtuales de eficiencia incluidas entre los sensores requieren
 verificar su disponibilidad si se quisiera usar el prototipo fuera del banco.
-El rendimiento en otra instalación no se conoce. Antes de cerrar el informe,
-el equipo debe justificar por escrito la elección de partición por grupos
-frente a la indicación general de partición temporal del PDF de la asignatura
-para series temporales; aquí cada ciclo de 60 segundos se resume en una fila.
+El rendimiento en otra instalación no se conoce. Una validación cronológica
+para predecir ciclos futuros respondería a otra pregunta y no se realizó.
 
 ### Pendiente para integrar la versión final
 
