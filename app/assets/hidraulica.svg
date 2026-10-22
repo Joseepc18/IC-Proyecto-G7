@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="640" viewBox="0 0 760 640">
+<defs>
+ <linearGradient id="metal" x1="0" x2="1"><stop stop-color="#102338"/><stop offset=".42" stop-color="#42607d"/><stop offset=".68" stop-color="#16324c"/><stop offset="1" stop-color="#081526"/></linearGradient>
+ <linearGradient id="pipe"><stop stop-color="#0a192c"/><stop offset=".5" stop-color="#395671"/><stop offset="1" stop-color="#101f32"/></linearGradient>
+</defs><g opacity=".48">
+<g fill="none" stroke="url(#pipe)" stroke-width="28">
+ <path d="M610-20v96q0 30-30 30h-82q-30 0-30 30v165"/>
+ <path d="M760 126H666q-30 0-30 30v374"/>
+ <path d="M730-20v78M740 350h-84M360 480h110"/>
+</g>
+<g fill="url(#metal)" stroke="#4a6680" stroke-width="2">
+ <rect x="437" y="202" width="59" height="66" rx="8"/>
+ <path d="M391 332q0-74 75-74t75 74v240q0 58-75 58t-75-58Z"/>
+ <ellipse cx="466" cy="333" rx="75" ry="22"/>
+ <rect x="444" y="167" width="45" height="51" rx="5"/>
+ <rect x="438" y="183" width="57" height="12" rx="3"/>
+ <path d="M391 554q75 24 150 0v20q-75 25-150 0Z"/>
+ <rect x="638" y="315" width="39" height="60" rx="6"/>
+</g>
+<g stroke="#6385a5" fill="none" opacity=".65"><path d="M411 353v192M423 359v184"/><path d="M454 203v44M471 203v44M484 203v44"/></g>
+</g></svg>
