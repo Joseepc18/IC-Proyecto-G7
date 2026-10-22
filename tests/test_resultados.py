@@ -1,4 +1,5 @@
 """La tabla unica se arma con un archivo por persona sin pisar filas de otros."""
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -62,6 +63,49 @@ class PruebasResultados(unittest.TestCase):
         with tempfile.TemporaryDirectory() as vacio:
             with self.assertRaises(FileNotFoundError):
                 consolidar(Path(vacio))
+
+    def escribir_y_consolidar(self, tabla_modificada, nombre="resultados_luis.csv"):
+        tabla_modificada.to_csv(self.dir / nombre, index=False)
+        return consolidar(self.dir)
+
+    def test_rechaza_archivos_sin_filas_o_vacios(self):
+        encabezado = ",".join(config.COLUMNAS_RESULTADOS)
+        (self.dir / "resultados_luis.csv").write_text(encabezado + "\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "resultados_luis.csv.*no tiene filas"):
+            consolidar(self.dir)
+        (self.dir / "resultados_luis.csv").write_text("", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "resultados_luis.csv.*vacio"):
+            consolidar(self.dir)
+
+    def test_rechaza_modelo_vacio_o_en_blanco_con_archivo_y_fila(self):
+        for valor in (None, "   "):
+            malo = tabla("KNN", "SVM")
+            malo.loc[1, "modelo"] = valor
+            with self.assertRaisesRegex(ValueError, "resultados_luis.csv, fila 3.*modelo"):
+                self.escribir_y_consolidar(malo)
+
+    def test_rechaza_metricas_ausentes_o_mal_formadas(self):
+        for columna in ("F1_macro_CV (media±std)", "exactitud_CV", "ROC_AUC_CV"):
+            for valor in (None, "sin resultado", "0.5", "0.5 ± ", "nan ± 0.1", "-0.5 ± 0.1"):
+                malo = tabla("KNN", "SVM")
+                malo.loc[0, columna] = valor
+                with self.assertRaisesRegex(ValueError, f"fila 2.*{re.escape(columna)}"):
+                    self.escribir_y_consolidar(malo)
+
+    def test_rechaza_tiempos_ausentes_no_numericos_no_finitos_o_negativos(self):
+        for columna in ("t_entrenamiento", "t_inferencia"):
+            for valor in (None, "n/d", np.inf, -np.inf, -0.5):
+                malo = tabla("KNN", "SVM")
+                malo["t_entrenamiento"] = malo["t_entrenamiento"].astype(object)
+                malo["t_inferencia"] = malo["t_inferencia"].astype(object)
+                malo.loc[1, columna] = valor
+                with self.assertRaisesRegex(ValueError, f"fila 3.*{re.escape(columna)}"):
+                    self.escribir_y_consolidar(malo)
+
+    def test_acepta_tiempo_cero(self):
+        self.assertEqual(
+            self.escribir_y_consolidar(tabla("KNN").assign(t_inferencia=0.0)).shape[0], 1
+        )
 
     def test_validar_cruzado_genera_las_columnas_del_contrato(self):
         # 4 clases x 10 grupos x 2 ciclos: cada pliegue ve las 4 clases.
