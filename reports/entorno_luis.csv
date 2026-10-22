@@ -1,0 +1,12 @@
+,valor
+sistema,Windows-11-10.0.26200-SP0
+procesador,"Intel64 Family 6 Model 140 Stepping 1, GenuineIntel"
+cpu_logicos,8
+ram_gib,11.8
+python,3.12.13
+numpy,2.5.4
+pandas,3.0.6
+scipy,1.18.1
+scikit_learn,1.9.1
+semilla,42
+pliegues,5
