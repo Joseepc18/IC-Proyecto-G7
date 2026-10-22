@@ -14,9 +14,9 @@ Estos trabajos comparten limitaciones relevantes para nosotros. Primero, reporta
 
 En cuanto a la optimización de hiperparámetros, Bergstra y Bengio (2012) mostraron que muestrear al azar el mismo espacio de búsqueda puede igualar o superar a la búsqueda en rejilla con mucho menos cómputo, porque pocos hiperparámetros influyen de verdad en cada conjunto de datos, y propusieron la búsqueda aleatoria como línea de base para evaluar métodos adaptativos. Los algoritmos genéticos son una de esas alternativas: Chiroma et al. (2017) revisan su uso para optimizar redes neuronales, organizado por dominio de aplicación, diseño de la red y valores de los operadores genéticos. La evidencia sobre esa comparación es mixta. Valsecchi et al. (2021) compararon rejilla, búsqueda aleatoria, TPE y algoritmo genético para redes neuronales multitarea en tres conjuntos de química (QSAR), con 100 arquitecturas por corrida y 10 corridas independientes: el algoritmo genético y TPE superaron a la búsqueda aleatoria de forma significativa en validación cruzada, y en dos de los tres conjuntos en la prueba externa. En cambio, el argumento de Bergstra y Bengio (2012) sugiere que la búsqueda aleatoria es difícil de superar cuando pocos hiperparámetros importan. El-Hassani et al. (2024) aplican un algoritmo genético a los hiperparámetros de una MLP en conjuntos de la UCI, aunque en lo leído no lo comparan con la búsqueda aleatoria. En la búsqueda realizada no encontramos una comparación de este tipo con una MLP y datos de sensores; este trabajo la evalúa con el mismo presupuesto de evaluaciones y varias repeticiones, sin presuponer que el algoritmo genético gane.
 
-Por último, el razonamiento aproximado aporta una vía de explicación. Filo (2023) revisa la lógica difusa en sistemas hidráulicos y neumáticos y encuentra el control y el diagnóstico de fallas entre sus áreas principales de aplicación, con atención a las funciones de pertenencia, los operadores y los métodos de inferencia. Cummins et al. (2024), en una revisión de la explicabilidad en mantenimiento predictivo que sigue las guías PRISMA, subrayan que los operadores necesitan confiar en estos sistemas cuando las decisiones son de alto riesgo. No encontramos trabajos que apliquen lógica difusa a este conjunto de datos; este trabajo la usa de forma acotada, como explicación de la predicción de la red sobre unas pocas variables de presión, junto con una marca de baja confianza basada en probabilidades.
+Por último, el razonamiento aproximado aporta una vía de explicación. Filo (2023) revisa la lógica difusa en sistemas hidráulicos y neumáticos y encuentra el control y el diagnóstico de fallas entre sus áreas principales de aplicación, con atención a las funciones de pertenencia, los operadores y los métodos de inferencia. Cummins et al. (2024), en una revisión de la explicabilidad en mantenimiento predictivo que sigue las guías PRISMA, subrayan que los operadores necesitan confiar en estos sistemas cuando las decisiones son de alto riesgo. No encontramos trabajos que apliquen lógica difusa a este conjunto de datos; este trabajo propone usarla, de forma opcional y acotada, para describir tendencias en unas pocas variables de presión junto a la predicción del modelo seleccionado y una marca de baja confianza basada en probabilidades.
 
-**Resumen de la brecha.** La literatura sobre este banco reporta altas exactitudes con repartos aleatorios o no especificados, y en lo leído no fija de antemano un criterio de éxito; no compara algoritmos genéticos con búsqueda aleatoria bajo un presupuesto igual (lo más cercano es Valsecchi et al., en otro dominio); y no ofrece explicación ni medida de confianza al técnico. Este trabajo aborda esas tres brechas para el estado del acumulador.
+**Resumen de la brecha.** En los trabajos revisados (una búsqueda no sistemática, en parte basada en resúmenes), la literatura sobre este banco reporta altas exactitudes con repartos aleatorios o no especificados y no fija de antemano un criterio de éxito; no encontramos una comparación de algoritmos genéticos con búsqueda aleatoria bajo un presupuesto igual (lo más cercano es Valsecchi et al., en otro dominio), ni una explicación o medida de confianza dirigida al técnico. Este trabajo aborda esas tres brechas para el estado del acumulador, sin afirmar que no existan en la literatura no revisada.
 
 ## Fuentes consultadas
 
@@ -45,7 +45,7 @@ Por último, el razonamiento aproximado aporta una vía de explicación. Filo (2
 Dataset: Helwig, N., Pignanelli, E., & Schütze, A. (2015). *Condition monitoring of hydraulic systems* [Data set]. UCI Machine Learning Repository. https://doi.org/10.24432/C5CW21 (CC BY 4.0).
 
 ### Hallazgos para el informe
-- Las fuentes 5 y 6 reportan exactitud con reparto aleatorio (la 5 no aclara si es por grupos): sus cifras no son comparables con nuestro F1 macro con partición por grupos.
+- Goodarzi et al. (fuente 6) usan una partición aleatoria 70/10/20; Yildirim et al. (fuente 5) informan una partición 70/30 sin especificar el procedimiento (aleatorio, estratificado o por grupos). Sus exactitudes no son comparables con nuestro F1 macro con partición por grupos.
 - `accumulator` es el objetivo más difícil en la fuente 5 (89,6 % frente a 95–100 % del resto).
 - GA frente a búsqueda aleatoria: la evidencia previa es mixta. Valsecchi et al. (2021, fila 11) encuentran al GA mejor con presupuesto igual de 100 evaluaciones, pero en otro dominio (QSAR, redes multitarea); Bergstra y Bengio (2012) indican que la búsqueda aleatoria es una línea de base fuerte cuando pocos hiperparámetros importan. No apareció un estudio con una MLP y datos de sensores. La búsqueda fue de varias consultas en buscadores y Crossref, no una revisión sistemática.
 
@@ -58,7 +58,7 @@ En clasificación multiclase, la capa de salida usa softmax: devuelve una probab
 
 **Relación con el problema**
 - Entrada: 68 variables por ciclo, estandarizadas dentro del `Pipeline` (las MLP son sensibles a la escala). Salida: 4 probabilidades (90, 100, 115 y 130 bar).
-- Las probabilidades softmax alimentan la marca de baja confianza del prototipo. Softmax no garantiza probabilidades calibradas: por eso el umbral se recalibra con predicciones fuera de pliegue.
+- Si la MLP resulta el modelo seleccionado, sus probabilidades softmax alimentan la marca de baja confianza del prototipo. Softmax no garantiza probabilidades calibradas: por eso el umbral se recalibra con predicciones fuera de pliegue.
 - Hiperparámetros que optimiza el GA: `hidden_layer_sizes` (capacidad), `alpha` (penalización L2), `learning_rate_init` (paso de Adam) y `activation` (relu o tanh).
 
 ### Algoritmo genético (GA)
@@ -70,7 +70,7 @@ Es una búsqueda estocástica global: no necesita gradientes y admite variables 
 - Individuo: `hidden_layer_sizes` (índice entre 5 opciones), `alpha` y `learning_rate_init` (continuos, escala logarítmica) y `activation`.
 - Aptitud: F1 macro medio de la CV por grupos. Se fija el `random_state` de la MLP en cada evaluación; si no, la aptitud de un mismo individuo cambia entre llamadas y el GA persigue ruido.
 - Implementación: PyGAD 3.9.2 (Gad, 2024). Operadores por defecto: selección `sss`, cruce de un punto, mutación aleatoria.
-- Comparación: `RandomizedSearchCV` es la referencia estándar (Bergstra y Bengio, 2012). El GA solo "gana" si la diferencia supera la desviación de la CV; si no, se escribe "no se observó una mejora clara".
+- Comparación: `RandomizedSearchCV` es la referencia estándar (Bergstra y Bengio, 2012). Criterio (c): el GA solo "gana" si la diferencia de F1 macro supera la desviación estándar entre pliegues de la CV (dentro de una corrida, promediada sobre las tres corridas; se toma la mayor de las dos búsquedas); si no, se escribe "no se observó una mejora clara". La variación entre semillas (3 corridas por método) se informa por separado y no sustituye a ese criterio.
 
 **Presupuesto de evaluaciones (medido en PyGAD 3.9.2 con una aptitud de juguete).** PyGAD no vuelve a evaluar a los padres que conserva, así que 100 evaluaciones no salen de `población × generaciones`:
 
@@ -80,7 +80,7 @@ Es una búsqueda estocástica global: no necesita gradientes y admite variables 
 | población 10, 9 generaciones, `keep_elitism=0`, `keep_parents=0` | 100 |
 | población 20, 4 generaciones, `keep_elitism=1` | 96 |
 
-Para que el GA y `RandomizedSearchCV` gasten lo mismo, se cuentan las llamadas dentro de la función de aptitud y se fija la configuración (por ejemplo, `sol_per_pop=10`, 9 generaciones, sin élite = 100 exactas). Esto no se ha probado todavía con la MLP real.
+Para que el GA y `RandomizedSearchCV` gasten lo mismo, se cuentan las llamadas dentro de la función de aptitud y se fija la configuración (por ejemplo, `sol_per_pop=10`, `num_generations=9`, `keep_elitism=0` y `keep_parents=0` = 100 exactas). Quitar solo el elitismo no basta: con 2 padres conservados el conteo fue de 82 llamadas. El notebook `03_metaheuristica` cuenta las llamadas con la MLP real y comprueba que cada corrida usa 100 evaluaciones.
 
 ### Lógica difusa y manejo de incertidumbre
 La lógica difusa generaliza la lógica clásica: en lugar de decir que un elemento pertenece o no a un conjunto, le asigna un **grado de pertenencia** entre 0 y 1 (Zadeh, 1965). Permite representar conceptos graduales como "presión baja" o "presión algo reducida", sin un corte rígido.
@@ -90,8 +90,8 @@ Un sistema difuso tipo Mamdani (Mamdani y Assilian, 1975) tiene cuatro pasos: (1
 **Relación con el problema**
 - Dos tipos de incertidumbre: la probabilidad de softmax expresa la confianza del modelo en una clase; la lógica difusa expresa la vaguedad de la medida (108 bar no es nítidamente "100" ni "115"). Se complementan.
 - Los niveles de presión (90, 100, 115 y 130 bar) son ordinales y se describen bien con términos lingüísticos.
-- Papel en el prototipo: **explicación**, no un quinto clasificador. Sobre 2 o 3 variables de presión se muestra qué reglas se activan y con qué grado, junto a la predicción de la MLP.
-- Criterios de diseño: las funciones de pertenencia se definen solo con datos de entrenamiento; se propone medir cuánto coincide la explicación con la predicción de la MLP en predicciones fuera de pliegue, nunca en prueba.
+- Papel en el prototipo (opcional, si el equipo lo acuerda): **descripción de tendencias**, no un quinto clasificador. Sobre 2 o 3 variables de presión se muestra qué reglas se activan y con qué grado, junto a la predicción del modelo seleccionado. Unas reglas independientes no explican por sí solas las decisiones del modelo: su fidelidad se comprueba antes de presentarlas como explicación.
+- Criterios de diseño: las funciones de pertenencia se definen solo con datos de entrenamiento; se propone medir cuánto coincide la explicación con la predicción del modelo seleccionado en predicciones fuera de pliegue, nunca en prueba.
 - No se encontró una fuente que aplique lógica difusa a este conjunto de datos: el enlace con el problema es razonamiento propio.
 
 ### Referencias de los fundamentos
@@ -118,23 +118,23 @@ Un sistema difuso tipo Mamdani (Mamdani y Assilian, 1975) tiene cuatro pasos: (1
 **Objetivos específicos** (misma estructura, con lo medible explícito)
 1. Extraer las 68 variables y partir por grupos de combinación, sin fuga de información.
 2. Comparar los cuatro modelos con una línea base bajo el mismo `Pipeline` y la misma CV. Evaluar el GA frente a `RandomizedSearchCV` y a la MLP por defecto, con 3 corridas cada uno.
-3. Construir un prototipo que devuelva la clase, las probabilidades, una marca de baja confianza y una explicación difusa.
+3. Construir un prototipo que devuelva la clase, las probabilidades, una marca de baja confianza y, si el equipo lo acuerda, una explicación difusa (opcional).
 
 **Hipótesis** (falsables, alineadas con los criterios de éxito)
 - **H1.** Los cuatro modelos superan a `Dummy(stratified)` por más de 2 desviaciones en F1 macro de CV.
-- **H2 (exploratoria, post hoc).** Random Forest y MLP superan a KNN y SVM. Está motivada por mediciones sobre entrenamiento con modelos por defecto (≈ 0,72–0,75 frente a ≈ 0,49–0,53). Los resultados parciales de KNN y SVM ya ajustados (SVM con F1 macro 0,767 ± 0,087 en el borrador de Luis) la ponen en duda para SVM, así que debe replantearse antes de fijarla. No se plantea que MLP supere a Random Forest: con las cifras medidas están empatados.
-- **H3.** El GA supera a `RandomizedSearchCV` en F1 macro de CV por más que la variabilidad entre sus corridas. La evidencia previa es mixta (Valsecchi et al., 2021; Bergstra y Bengio, 2012), así que el resultado está abierto y "no se observó una mejora clara" es una conclusión válida.
+- **H2 (exploratoria, post hoc).** Random Forest y MLP superan a KNN y SVM. Está motivada por mediciones sobre entrenamiento con modelos por defecto (≈ 0,72–0,75 frente a ≈ 0,49–0,53), así que no es una hipótesis fijada de antemano. Se mantiene tal como está y se evalúa con los resultados finales, sin reformularla para que encaje con lo observado: los resultados parciales de la SVM ya ajustada (F1 macro 0,767 ± 0,087 en el borrador de Luis) la contradicen para esa comparación, y así se informará. No se plantea que MLP supere a Random Forest: con las cifras medidas están empatados.
+- **H3.** El GA supera a `RandomizedSearchCV` en F1 macro de CV por más que la desviación entre pliegues de la CV (criterio (c)); la variación entre semillas se informa por separado. La evidencia previa es mixta (Valsecchi et al., 2021; Bergstra y Bengio, 2012), así que el resultado está abierto y "no se observó una mejora clara" es una conclusión válida.
 - **H4.** Las predicciones con probabilidad máxima sobre el umbral tienen mayor exactitud que las marcadas como baja confianza, medido con predicciones fuera de pliegue.
 
 ## Qué no está verificado
 - Goodarzi (fila 6): reparto aleatorio 70/10/20, 50 iteraciones de búsqueda y errores de 1 %, 20,5 % y 1,7 % (PS1 sola) contrastados con el texto del PDF. Khan (fila 4) y Yildirim (fila 5): contrastados con el texto completo en XML de Europe PMC. Khan reporta en prueba exactitud 96 %, precisión 96 % (la conclusión dice 95 %), recall 95 % y F-score 95 %; los recuentos por clase de los 440 espectrogramas difieren entre secciones (146/146/148 frente a 146/148/146). Yildirim: "70 % entrenamiento y 30 % prueba", sin decir si es aleatorio, estratificado o por grupos, y sin validación cruzada para clasificar; usa los 2.205 ciclos, no solo los estables.
 - Filas 1, 2, 3, 7, 8, 9 y 12: solo se leyó el resumen o la información del editor. Fila 10: no consta la lectura de su texto completo. Antes de citar una cifra de ellas, contrastarla con el PDF.
 - De Cybenko, Mamdani y Katoch se verificaron DOI y metadatos, no el texto: lo que se dice de ellos es de memoria.
-- El conteo de evaluaciones de PyGAD se midió con una función de juguete, no con la MLP real.
+- El conteo de 91, 100 y 82 llamadas de PyGAD se midió con una función de juguete; con la MLP real solo consta la configuración de 100 (notebook `03_metaheuristica`).
 - Que la hipótesis nula (GA ≈ búsqueda aleatoria) sea plausible es una inferencia propia: Bergstra y Bengio no prueban GA y Valsecchi et al. encuentran al GA mejor, en otro dominio.
 - Pendiente: con `max_iter=50` una prueba pequeña lanzó `ConvergenceWarning`. Hay que comprobar con los datos reales que un `max_iter` fijo alcanza; si no, el GA premiaría configuraciones que solo entrenan más rápido.
 - Pendiente: las 2 o 3 variables de la explicación difusa se eligen tras el EDA. `requirements.txt` no incluye una librería difusa; agregarla se acuerda con el equipo (con pocas variables y reglas se puede escribir con NumPy).
-- Las referencias mezclan formatos (IEEE en las tablas, APA en los fundamentos); hay que unificarlas al ensamblar el informe.
+- Las referencias mezclan formatos (IEEE en las tablas, APA en los fundamentos); hay que unificarlas al ensamblar el informe, distinguiendo Helwig et al. 2015a, 2015b y la referencia del conjunto de datos.
 
 ## Registro para el anexo de uso de IA generativa
 Para el contenido de este documento se usó un asistente de IA generativa (Claude Code, modelo Claude Sonnet 5.5) para buscar y verificar fuentes académicas, redactar borradores del marco teórico y de los antecedentes, proponer la formulación del problema y de las hipótesis, y escribir scripts de apoyo para el conteo de evaluaciones de PyGAD, usando solo datos de entrenamiento. El trabajo se hizo bajo la dirección de José, que indicó qué hacer en cada paso, abrió en el navegador varios DOI (MDPI, Springer, Heliyon) para confirmar autores y fechas, y aprobó los resultados. El resto del uso de IA en el proyecto lo declara cada integrante en su registro.
