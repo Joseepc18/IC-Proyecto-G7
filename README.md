@@ -89,6 +89,23 @@ El archivo se rechaza completo, sin predicción, si:
 La app muestra el motivo del rechazo y, cuando corresponde, el registro y la
 columna afectados. Los rangos se calculan exclusivamente con entrenamiento.
 
+## Tabla de resultados
+
+Cada persona escribe sus modelos en `reports/resultados_<nombre>.csv` y no edita
+`reports/resultados.csv`, que es la tabla única y se genera uniendo esos archivos.
+
+Regenerarla desde la raíz del repositorio, cuando ya estén todos los
+`resultados_<nombre>.csv` en la rama y antes de usar la tabla (comparación en el
+informe o en la reunión del 27/oct):
+
+```powershell
+& ".\.venv\Scripts\python.exe" scripts/consolidar_resultados.py
+```
+
+El script falla indicando archivo y fila si falta una columna, un nombre de modelo
+está vacío o repetido, una métrica no tiene el formato `media ± std` o un tiempo no
+es un número finito no negativo.
+
 ## Cómo levantar Streamlit
 
 Se requiere **Python 3.12**. Ejecutar los comandos desde la raíz del repositorio
