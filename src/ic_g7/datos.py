@@ -35,7 +35,7 @@ def _cargar_particion(nombre: str):
 
 
 def cargar_entrenamiento():
-    """Devuelve X, y, grupos del conjunto de entrenamiento (1.816 ciclos)."""
+    """Devuelve X, y, grupos del conjunto de entrenamiento (1.827 ciclos)."""
     return _cargar_particion("train")
 
 
