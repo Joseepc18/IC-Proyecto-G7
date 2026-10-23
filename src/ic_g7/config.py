@@ -3,7 +3,7 @@ from pathlib import Path
 
 RANDOM_STATE = 42
 # Valor inicial; se recalibra con predicciones fuera de pliegue (contrato, seccion 7).
-UMBRAL_CONFIANZA = 0.60
+UMBRAL_CONFIANZA = 0.87
 
 RAIZ = Path(__file__).resolve().parents[2]
 DIR_CRUDO = RAIZ / "data" / "raw" / "hydraulic"

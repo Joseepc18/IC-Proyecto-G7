@@ -100,7 +100,7 @@ class PruebasPrototipo(unittest.TestCase):
                 return np.array([
                     [0.40, 0.30, 0.20, 0.10],
                     [config.UMBRAL_CONFIANZA, 0.20, 0.10, 0.10],
-                    [0.05, 0.05, 0.05, 0.85],
+                    [0.01, 0.01, 0.01, 0.97],
                 ])[:len(X)]
 
             def predict(self, X):
