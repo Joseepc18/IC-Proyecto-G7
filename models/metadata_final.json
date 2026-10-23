@@ -1,0 +1,442 @@
+{
+  "schema_version": 1,
+  "fecha_utc": "2026-10-23T22:43:27.193491+00:00",
+  "estado": "reentrenado; evaluación de prueba pendiente al generar estos artefactos",
+  "seleccion": {
+    "modelo": "MLP+GA (semilla 42)",
+    "origen": "Selección comunicada por José y solicitada por el equipo en esta tarea.",
+    "fuente": "reports/resultados_jose.csv",
+    "fuente_sha256": "b26b3a16ff12efa12e78088c5a99e5fa68ae0905db6b86421e7859233ab37ec1",
+    "hiperparametros": {
+      "hidden_layer_sizes": [
+        64
+      ],
+      "alpha": 0.0035127047262708444,
+      "learning_rate_init": 0.0026698666742744587,
+      "activation": "tanh",
+      "max_iter": 4000,
+      "random_state": 42
+    },
+    "f1_macro_cv_media": 0.8123,
+    "f1_macro_cv_std": 0.0543,
+    "nota": "Media y desviación entre pliegues, redondeadas como en el CSV. Elegir esta configuración no demuestra que GA supere a búsqueda aleatoria."
+  },
+  "split_sha256": "0a992a308ccd7f1ee4cd9fd385c926c549f2a278e2510a5cb3b21da462cad4e7",
+  "entrenamiento_sha256": "f41f8cce7a271e9913ab22c0e16dd214b95ded7ce9086483ab30424bbbe866fd",
+  "columnas_entrada": [
+    "PS1_mean",
+    "PS1_std",
+    "PS1_min",
+    "PS1_max",
+    "PS2_mean",
+    "PS2_std",
+    "PS2_min",
+    "PS2_max",
+    "PS3_mean",
+    "PS3_std",
+    "PS3_min",
+    "PS3_max",
+    "PS4_mean",
+    "PS4_std",
+    "PS4_min",
+    "PS4_max",
+    "PS5_mean",
+    "PS5_std",
+    "PS5_min",
+    "PS5_max",
+    "PS6_mean",
+    "PS6_std",
+    "PS6_min",
+    "PS6_max",
+    "EPS1_mean",
+    "EPS1_std",
+    "EPS1_min",
+    "EPS1_max",
+    "FS1_mean",
+    "FS1_std",
+    "FS1_min",
+    "FS1_max",
+    "FS2_mean",
+    "FS2_std",
+    "FS2_min",
+    "FS2_max",
+    "TS1_mean",
+    "TS1_std",
+    "TS1_min",
+    "TS1_max",
+    "TS2_mean",
+    "TS2_std",
+    "TS2_min",
+    "TS2_max",
+    "TS3_mean",
+    "TS3_std",
+    "TS3_min",
+    "TS3_max",
+    "TS4_mean",
+    "TS4_std",
+    "TS4_min",
+    "TS4_max",
+    "VS1_mean",
+    "VS1_std",
+    "VS1_min",
+    "VS1_max",
+    "CE_mean",
+    "CE_std",
+    "CE_min",
+    "CE_max",
+    "CP_mean",
+    "CP_std",
+    "CP_min",
+    "CP_max",
+    "SE_mean",
+    "SE_std",
+    "SE_min",
+    "SE_max"
+  ],
+  "clases_ordenadas": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "ciclos_entrenamiento": 1827,
+  "grupos_entrenamiento": 111,
+  "distribucion_clases": {
+    "0": 686,
+    "1": 317,
+    "2": 317,
+    "3": 507
+  },
+  "variables_conservadas": [
+    "PS1_mean",
+    "PS1_std",
+    "PS1_min",
+    "PS1_max",
+    "PS2_mean",
+    "PS2_std",
+    "PS2_max",
+    "PS3_mean",
+    "PS3_std",
+    "PS3_max",
+    "PS4_mean",
+    "PS4_std",
+    "PS4_min",
+    "PS4_max",
+    "PS5_mean",
+    "PS5_std",
+    "PS6_std",
+    "EPS1_mean",
+    "EPS1_min",
+    "EPS1_max",
+    "FS1_mean",
+    "FS1_std",
+    "FS1_max",
+    "FS2_mean",
+    "FS2_std",
+    "TS1_mean",
+    "TS1_std",
+    "TS2_std",
+    "TS3_std",
+    "TS4_std",
+    "VS1_mean",
+    "VS1_std",
+    "VS1_min",
+    "VS1_max",
+    "CE_mean",
+    "CE_std",
+    "CP_mean",
+    "CP_std",
+    "SE_mean",
+    "SE_std",
+    "SE_max"
+  ],
+  "rangos_entrenamiento": {
+    "PS1_mean": {
+      "minimo": 155.50824333333398,
+      "maximo": 180.867048333333
+    },
+    "PS1_std": {
+      "minimo": 13.92910451127576,
+      "maximo": 21.40295709097688
+    },
+    "PS1_min": {
+      "minimo": 133.27,
+      "maximo": 146.69
+    },
+    "PS1_max": {
+      "minimo": 189.66,
+      "maximo": 191.92
+    },
+    "PS2_mean": {
+      "minimo": 104.53017216666646,
+      "maximo": 131.52445816666705
+    },
+    "PS2_std": {
+      "minimo": 45.30009856759246,
+      "maximo": 59.54828504467459
+    },
+    "PS2_min": {
+      "minimo": 0.0,
+      "maximo": 0.0
+    },
+    "PS2_max": {
+      "minimo": 155.04,
+      "maximo": 167.77
+    },
+    "PS3_mean": {
+      "minimo": 0.8402524999999872,
+      "maximo": 2.023398333333335
+    },
+    "PS3_std": {
+      "minimo": 0.7284433310819489,
+      "maximo": 1.049236017870722
+    },
+    "PS3_min": {
+      "minimo": 0.0,
+      "maximo": 0.0
+    },
+    "PS3_max": {
+      "minimo": 9.109,
+      "maximo": 18.828
+    },
+    "PS4_mean": {
+      "minimo": 0.0,
+      "maximo": 10.207067666666678
+    },
+    "PS4_std": {
+      "minimo": 0.0,
+      "maximo": 4.529275778462852
+    },
+    "PS4_min": {
+      "minimo": 0.0,
+      "maximo": 10.133
+    },
+    "PS4_max": {
+      "minimo": 0.0,
+      "maximo": 10.266
+    },
+    "PS5_mean": {
+      "minimo": 8.365800499999942,
+      "maximo": 9.978510499999926
+    },
+    "PS5_std": {
+      "minimo": 0.0201400068161745,
+      "maximo": 0.0881466076285223
+    },
+    "PS5_min": {
+      "minimo": 8.318,
+      "maximo": 9.915
+    },
+    "PS5_max": {
+      "minimo": 8.418,
+      "maximo": 10.041
+    },
+    "PS6_mean": {
+      "minimo": 8.321526666666658,
+      "maximo": 9.85659133333326
+    },
+    "PS6_std": {
+      "minimo": 0.0201627587887228,
+      "maximo": 0.0853590572840207
+    },
+    "PS6_min": {
+      "minimo": 8.268,
+      "maximo": 9.79
+    },
+    "PS6_max": {
+      "minimo": 8.374,
+      "maximo": 9.91
+    },
+    "EPS1_mean": {
+      "minimo": 2361.747266666712,
+      "maximo": 2740.640999999998
+    },
+    "EPS1_std": {
+      "minimo": 185.08969481558955,
+      "maximo": 285.8025602030905
+    },
+    "EPS1_min": {
+      "minimo": 2156.8,
+      "maximo": 2384.0
+    },
+    "EPS1_max": {
+      "minimo": 2813.4,
+      "maximo": 2991.8
+    },
+    "FS1_mean": {
+      "minimo": 2.018571666666666,
+      "maximo": 6.720564999999993
+    },
+    "FS1_std": {
+      "minimo": 2.6636752023201926,
+      "maximo": 3.7356526869518505
+    },
+    "FS1_min": {
+      "minimo": 0.0,
+      "maximo": 0.0
+    },
+    "FS1_max": {
+      "minimo": 18.698,
+      "maximo": 20.479
+    },
+    "FS2_mean": {
+      "minimo": 8.857513333333346,
+      "maximo": 10.403098333333327
+    },
+    "FS2_std": {
+      "minimo": 0.0124084697776244,
+      "maximo": 0.0916950103907271
+    },
+    "FS2_min": {
+      "minimo": 8.764,
+      "maximo": 10.352
+    },
+    "FS2_max": {
+      "minimo": 8.936,
+      "maximo": 10.453
+    },
+    "TS1_mean": {
+      "minimo": 35.31378333333334,
+      "maximo": 57.89928333333335
+    },
+    "TS1_std": {
+      "minimo": 0.0603478435590055,
+      "maximo": 0.580838502129082
+    },
+    "TS1_min": {
+      "minimo": 34.984,
+      "maximo": 57.379
+    },
+    "TS1_max": {
+      "minimo": 35.504,
+      "maximo": 58.207
+    },
+    "TS2_mean": {
+      "minimo": 40.8594,
+      "maximo": 61.958466666666645
+    },
+    "TS2_std": {
+      "minimo": 0.036243466844231,
+      "maximo": 0.3951411769510011
+    },
+    "TS2_min": {
+      "minimo": 40.707,
+      "maximo": 61.672
+    },
+    "TS2_max": {
+      "minimo": 40.973,
+      "maximo": 62.176
+    },
+    "TS3_mean": {
+      "minimo": 38.24573333333333,
+      "maximo": 59.42316666666665
+    },
+    "TS3_std": {
+      "minimo": 0.0184557955366027,
+      "maximo": 0.3215171893624896
+    },
+    "TS3_min": {
+      "minimo": 38.145,
+      "maximo": 59.312
+    },
+    "TS3_max": {
+      "minimo": 38.363,
+      "maximo": 59.539
+    },
+    "TS4_mean": {
+      "minimo": 30.3908,
+      "maximo": 53.06041666666668
+    },
+    "TS4_std": {
+      "minimo": 0.0084320157073435,
+      "maximo": 1.4300369353233118
+    },
+    "TS4_min": {
+      "minimo": 30.355,
+      "maximo": 53.012
+    },
+    "TS4_max": {
+      "minimo": 30.422,
+      "maximo": 53.145
+    },
+    "VS1_mean": {
+      "minimo": 0.5243666666666668,
+      "maximo": 0.839066666666667
+    },
+    "VS1_std": {
+      "minimo": 0.0125664787784362,
+      "maximo": 0.4612664763693783
+    },
+    "VS1_min": {
+      "minimo": 0.483,
+      "maximo": 0.696
+    },
+    "VS1_max": {
+      "minimo": 0.562,
+      "maximo": 2.546
+    },
+    "CE_mean": {
+      "minimo": 17.555983333333337,
+      "maximo": 47.903666666666666
+    },
+    "CE_std": {
+      "minimo": 0.0626358967011374,
+      "maximo": 6.317224210640305
+    },
+    "CE_min": {
+      "minimo": 17.042,
+      "maximo": 47.626
+    },
+    "CE_max": {
+      "minimo": 18.142,
+      "maximo": 48.497
+    },
+    "CP_mean": {
+      "minimo": 1.06215,
+      "maximo": 2.8401
+    },
+    "CP_std": {
+      "minimo": 0.0068560597689602,
+      "maximo": 0.3406476327852907
+    },
+    "CP_min": {
+      "minimo": 1.016,
+      "maximo": 2.768
+    },
+    "CP_max": {
+      "minimo": 1.105,
+      "maximo": 2.909
+    },
+    "SE_mean": {
+      "minimo": 18.27661666666667,
+      "maximo": 60.755300000000005
+    },
+    "SE_std": {
+      "minimo": 20.32978486235706,
+      "maximo": 31.095490115569813
+    },
+    "SE_min": {
+      "minimo": 0.0,
+      "maximo": 0.0
+    },
+    "SE_max": {
+      "minimo": 65.319,
+      "maximo": 100.41
+    }
+  },
+  "segundos_reentrenamiento": 1.7337315999902785,
+  "iteraciones_mlp": 283,
+  "avisos_convergencia": 0,
+  "prueba_usada_en_reentrenamiento": false,
+  "pipeline_sha256": "36e0d201a8cfb7804c8cd5c1d612375db17b1774a4b6361f320edc72ce74b34f",
+  "labels_sha256": "c410c934ad9dcb29f31e35b3ad44f0461eab4c7dc92c23205121505e62eaf2ff",
+  "python": "3.12.14",
+  "versiones": {
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "joblib": "1.6.0"
+  },
+  "limite_hilos_blas": 1,
+  "pendiente": "Evaluación única con el equipo e integración en Streamlit. El umbral está disponible en config.py y las tendencias en difuso.py; son complementos del pipeline, no parámetros de su entrenamiento."
+}

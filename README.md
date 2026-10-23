@@ -43,6 +43,7 @@ src/ic_g7/
   evaluacion.py                Validación cruzada y métricas
   pipeline.py                  Preparación común dentro de cada pliegue
   experimentos_dayron.py        Random Forest con búsqueda y MLP base
+  modelo_final.py               Reentrenamiento y evaluación única reservada
   prototipo.py                 Validación del CSV y modelo Dummy
   interfaz/                    Componentes visuales y carga del tema
 scripts/                       Descarga y preparación de los datos
@@ -160,6 +161,44 @@ informe o en la reunión del 27/oct):
 El script falla indicando archivo y fila si falta una columna, un nombre de modelo
 está vacío o repetido, una métrica no tiene el formato `media ± std` o un tiempo no
 es un número finito no negativo.
+
+## Modelo elegido y evaluación final
+
+Se utiliza **MLP+GA (semilla 42)**, con la configuración registrada en
+`reports/resultados_jose.csv`. Desde la raíz del repositorio, con el entorno y
+los datos preparados, reentrenar con los **1827 ciclos de entrenamiento**:
+
+```powershell
+& ".\.venv\Scripts\python.exe" scripts/entrenar_modelo_final.py
+```
+
+Genera en `models/`:
+
+- `pipeline_final.joblib`: pipeline completo entrenado.
+- `labels.json`: clases, presiones y estados.
+- `metadata_final.json`: configuración, columnas y datos de reproducibilidad.
+
+El script no utiliza prueba y rechaza sobrescribir artefactos existentes.
+
+**La evaluación de los 378 ciclos de prueba se realiza una sola vez, con los tres
+presentes en la reunión acordada.** En ese momento:
+
+```powershell
+& ".\.venv\Scripts\python.exe" scripts/evaluar_modelo_final.py --confirmar-reunion
+```
+
+Guarda las métricas, la matriz de confusión, las predicciones y el registro en
+`reports/evaluacion_final/`. Bloquea nuevos intentos incluso si hubo un fallo;
+en ese caso se revisa con el equipo sin borrar el registro.
+
+El pipeline está reentrenado y la evaluación real queda pendiente. Streamlit
+continúa con Dummy hasta integrar el modelo y el umbral correspondiente.
+
+Ejecutar las pruebas locales:
+
+```powershell
+& ".\.venv\Scripts\python.exe" -m unittest discover -s tests -v
+```
 
 ## Cómo levantar Streamlit
 
