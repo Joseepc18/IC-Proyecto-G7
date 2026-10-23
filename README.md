@@ -192,13 +192,6 @@ Guarda las métricas, la matriz de confusión, las predicciones y el registro en
 `reports/evaluacion_final/`. Bloquea nuevos intentos incluso si hubo un fallo;
 en ese caso se revisa con el equipo sin borrar el registro.
 
-El pipeline está reentrenado y la evaluación real queda pendiente. El miércoles
-28/oct se integrarán en Streamlit el modelo, el umbral 0,87 de `config.py` y
-las tendencias difusas: `referencia_desde_entrenamiento()` una vez al arrancar y
-`explicar(fila, referencia, clase_predicha=...)` por ciclo. Se demostrarán las
-cuatro clases, los casos límite y al menos tres capturas. Hasta esa integración,
-la app continúa con Dummy.
-
 Ejecutar las pruebas locales:
 
 ```powershell
