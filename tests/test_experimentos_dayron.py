@@ -3,16 +3,19 @@ import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+import warnings
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import ConvergenceWarning
 
 from ic_g7 import config
 from ic_g7.evaluacion import crear_cv
 from ic_g7.experimentos_dayron import (
-    NOMBRE_RF_AJUSTADO, comprobar_pliegues, ejecutar_experimentos, resumir_oof,
+    NOMBRE_MLP, NOMBRE_RF_AJUSTADO, comprobar_pliegues, crear_modelos,
+    ejecutar_experimentos, evaluar_modelo, resumir_oof,
 )
 from ic_g7.pipeline import crear_pipeline
 
@@ -66,6 +69,39 @@ class PruebasExperimentosDayron(unittest.TestCase):
             with self.subTest(primera_fila=mala[0]):
                 with self.assertRaisesRegex(ValueError, "probabilidades"):
                     resumir_oof("prueba", self.y, mala, self.grupos, self.pliegues)
+
+    def test_detiene_experimento_si_mlp_no_converge(self):
+        modelo = crear_modelos({})[NOMBRE_MLP]
+        probabilidades = np.eye(4)[self.y]
+        por_pliegue = pd.DataFrame({
+            "pliegue": range(config.N_PLIEGUES),
+            "f1_macro": 1.0, "exactitud": 1.0, "roc_auc": 1.0,
+        })
+        # Si se quitara el control, estas salidas válidas permitirían continuar.
+        for origen in ("validacion", "oof"):
+            with (
+                self.subTest(origen=origen),
+                patch("ic_g7.experimentos_dayron.validar_cruzado",
+                      return_value=({}, por_pliegue)) as validar,
+                patch("ic_g7.experimentos_dayron.cross_val_predict",
+                      return_value=probabilidades) as predecir,
+            ):
+                llamada, salida = (
+                    (validar, ({}, por_pliegue)) if origen == "validacion"
+                    else (predecir, probabilidades)
+                )
+
+                def avisar_no_convergencia(*args, **kwargs):
+                    warnings.warn("La MLP no terminó de converger.", ConvergenceWarning)
+                    return salida
+
+                llamada.side_effect = avisar_no_convergencia
+                with self.assertRaisesRegex(
+                    RuntimeError, "MLP por defecto.*1 avisos de convergencia",
+                ):
+                    evaluar_modelo(
+                        NOMBRE_MLP, modelo, self.X, self.y, self.grupos, self.pliegues,
+                    )
 
     def test_ejecucion_exporta_solo_dayron_y_no_consulta_prueba(self):
         # La prueba usa una rejilla pequeña y datos artificiales; la ejecución real usa 27.
