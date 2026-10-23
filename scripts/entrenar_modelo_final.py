@@ -9,7 +9,7 @@ def main():
     print(f"Entrenamiento: {metadata['ciclos_entrenamiento']} ciclos.")
     print(f"MLP: {metadata['iteraciones_mlp']} iteraciones, sin avisos de convergencia.")
     print(f"Artefactos en: {config.DIR_MODELOS}")
-    print("Evaluación en prueba pendiente de la reunión; Streamlit continúa con Dummy.")
+    print("Evaluación en prueba pendiente del 27/oct; Streamlit continúa con Dummy.")
 
 
 if __name__ == "__main__":

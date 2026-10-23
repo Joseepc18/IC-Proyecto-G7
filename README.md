@@ -152,7 +152,7 @@ Cada persona escribe sus modelos en `reports/resultados_<nombre>.csv` y no edita
 
 Regenerarla desde la raíz del repositorio, cuando ya estén todos los
 `resultados_<nombre>.csv` en la rama y antes de usar la tabla (comparación en el
-informe o en la reunión del 27/oct):
+informe o en la evaluación del 27/oct):
 
 ```powershell
 & ".\.venv\Scripts\python.exe" scripts/consolidar_resultados.py
@@ -180,19 +180,24 @@ Genera en `models/`:
 
 El script no utiliza prueba y rechaza sobrescribir artefactos existentes.
 
-**La evaluación de los 378 ciclos de prueba se realiza una sola vez, con los tres
-presentes en la reunión acordada.** En ese momento:
+**La evaluación de los 378 ciclos de prueba se realiza una sola vez el martes
+27/oct.** Según el acuerdo actualizado, no requiere reunión ni la presencia
+simultánea de los tres integrantes. En esa fecha:
 
 ```powershell
-& ".\.venv\Scripts\python.exe" scripts/evaluar_modelo_final.py --confirmar-reunion
+& ".\.venv\Scripts\python.exe" scripts/evaluar_modelo_final.py --confirmar-evaluacion
 ```
 
 Guarda las métricas, la matriz de confusión, las predicciones y el registro en
 `reports/evaluacion_final/`. Bloquea nuevos intentos incluso si hubo un fallo;
 en ese caso se revisa con el equipo sin borrar el registro.
 
-El pipeline está reentrenado y la evaluación real queda pendiente. Streamlit
-continúa con Dummy hasta integrar el modelo y el umbral correspondiente.
+El pipeline está reentrenado y la evaluación real queda pendiente. El miércoles
+28/oct se integrarán en Streamlit el modelo, el umbral 0,87 de `config.py` y
+las tendencias difusas: `referencia_desde_entrenamiento()` una vez al arrancar y
+`explicar(fila, referencia, clase_predicha=...)` por ciclo. Se demostrarán las
+cuatro clases, los casos límite y al menos tres capturas. Hasta esa integración,
+la app continúa con Dummy.
 
 Ejecutar las pruebas locales:
 

@@ -1,5 +1,9 @@
 """Preparación solo con train, artefactos íntegros y evaluación única con datos sintéticos."""
+import contextlib
+import importlib.util
+import io
 import json
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -118,6 +122,31 @@ class PruebasModeloFinal(unittest.TestCase):
             )
         self.assertFalse(self.evaluacion.exists())
 
+    def test_cli_exige_confirmacion_de_evaluacion_sin_reunion(self):
+        ruta = Path(__file__).resolve().parents[1] / "scripts" / "evaluar_modelo_final.py"
+        spec = importlib.util.spec_from_file_location("evaluar_final_cli", ruta)
+        cli = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cli)
+        with (
+            patch.object(cli, "evaluar_prueba_una_vez") as evaluar,
+            patch.object(sys, "argv", [str(ruta)]),
+            contextlib.redirect_stderr(io.StringIO()),
+            self.assertRaises(SystemExit) as error,
+        ):
+            cli.main()
+        self.assertEqual(error.exception.code, 2)
+        evaluar.assert_not_called()
+        with (
+            patch.object(cli, "evaluar_prueba_una_vez", return_value={
+                "f1_macro_prueba": 0.8, "exactitud_prueba": 0.8,
+                "roc_auc_ovr_macro_prueba": 0.9,
+            }) as evaluar,
+            patch.object(sys, "argv", [str(ruta), "--confirmar-evaluacion"]),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            cli.main()
+        evaluar.assert_called_once_with(confirmar_evaluacion=True)
+
     def test_evalua_una_vez_sin_fit_y_mantiene_artefactos(self):
         self._preparar()
         antes = {p.name: p.read_bytes() for p in self.modelos.iterdir()}
@@ -134,6 +163,8 @@ class PruebasModeloFinal(unittest.TestCase):
             cargar.assert_called_once_with()
         estado = json.loads((self.evaluacion / "registro.json").read_text(encoding="utf-8"))
         self.assertEqual(estado["estado"], "completada")
+        self.assertIn("evaluación única acordada", estado["confirmacion"])
+        self.assertNotIn("reunión", estado["confirmacion"])
         self.assertEqual(informe["ciclos_prueba"], len(self.X_test))
         self.assertEqual(informe["confianza"]["umbral"], config.UMBRAL_CONFIANZA)
         self.assertEqual(antes, {p.name: p.read_bytes() for p in self.modelos.iterdir()})

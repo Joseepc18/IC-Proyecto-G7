@@ -1,7 +1,7 @@
 """Reentrenamiento del modelo elegido y evaluación reservada del proyecto.
 
 Preparar el artefacto usa solo entrenamiento. La prueba se carga únicamente en
-evaluar_prueba_una_vez, con confirmación explícita de la reunión del equipo.
+evaluar_prueba_una_vez, con confirmación explícita de la evaluación única.
 """
 import ast
 from datetime import datetime, timezone
@@ -209,16 +209,16 @@ def cargar_modelo_guardado(directorio=None):
     return modelo, etiquetas, metadata
 
 
-def evaluar_prueba_una_vez(confirmar_reunion=False, directorio_modelos=None,
+def evaluar_prueba_una_vez(confirmar_evaluacion=False, directorio_modelos=None,
                            directorio_reportes=None):
     """Evalúa el artefacto congelado, sin fit ni selección de hiperparámetros.
 
     El registro se crea de forma exclusiva ANTES de cargar prueba. Un fallo tras
     ese momento también impide repetirla automáticamente: se revisa con el equipo.
     """
-    if not confirmar_reunion:
-        raise PermissionError("La prueba se reserva a la reunión con los tres presentes. "
-                              "Se requiere confirmación explícita.")
+    if not confirmar_evaluacion:
+        raise PermissionError("La prueba se reserva a la evaluación final acordada. "
+                              "Se requiere confirmación explícita de la evaluación única.")
     destino = (Path(directorio_reportes) if directorio_reportes is not None
                else config.DIR_REPORTES / "evaluacion_final")
     registro = destino / "registro.json"
@@ -235,7 +235,7 @@ def evaluar_prueba_una_vez(confirmar_reunion=False, directorio_modelos=None,
         "fecha_inicio_utc": _ahora(), "estado": "iniciada",
         "modelo_sha256": metadata["pipeline_sha256"],
         "split_sha256": metadata["split_sha256"],
-        "confirmacion": "Quien ejecuta confirma la reunión y la selección previa del modelo.",
+        "confirmacion": "Quien ejecuta confirma la evaluación única acordada y la selección previa del modelo.",
     }
     with registro.open("x", encoding="utf-8") as archivo:
         json.dump(estado, archivo, ensure_ascii=False, indent=2)
