@@ -1,9 +1,11 @@
-# Aporte de Luis al informe técnico (borrador, 22/oct/2026)
+# Aporte de Luis al informe técnico (actualizado, 23/oct/2026)
 
-Este texto cubre **Datos y preparación**, **Resultados** y **Discusión**. Se basa
-exclusivamente en entrenamiento y validación cruzada por grupos. La tabla todavía
-debe incorporar Random Forest, MLP y la optimización genética; la prueba reservada
-se evaluará una sola vez después de seleccionar el modelo final con el equipo.
+Este texto cubre **Datos y preparación**, **Resultados** y **Discusión**. Las
+cifras que siguen proceden exclusivamente del entrenamiento y de validación
+cruzada por grupos. La tabla consolidada contiene 16 filas. El equipo eligió
+la MLP optimizada con algoritmo genético y semilla 42 como modelo final según
+la regla acordada. Dayron hará la evaluación única en la prueba reservada el
+27/oct; sus resultados aún no figuran en este borrador.
 
 ## Datos y preparación
 
@@ -68,66 +70,124 @@ redundantes que pueden ayudar a explicar tendencias; sus distribuciones se
 solapan entre clases, de modo que no constituyen reglas diagnósticas por sí
 solas.
 
-## Resultados de modelos clásicos (parciales)
+## Resultados de validación cruzada
 
-Se compararon dos clasificadores de referencia y se ajustaron KNN y SVM con
-F1 macro como objetivo de búsqueda. Para KNN se evaluaron 36 combinaciones de
-número de vecinos, ponderación y distancia. Para SVM con núcleo RBF se
-muestrearon 30 combinaciones de `C` y `gamma` en escala logarítmica. Todas las
-búsquedas usaron los cinco pliegues por grupos y el mismo preprocesamiento.
-Los parámetros elegidos fueron **KNN: 11 vecinos, distancia Manhattan y
-ponderación por distancia**; **SVM: `C = 45,71` y `gamma = 0,02481`**.
+Se compararon dos líneas base, KNN, SVM, Random Forest y MLP con el mismo
+`split.csv`, cinco pliegues por grupos y el `Pipeline` compartido. KNN exploró
+36 combinaciones, SVM RBF 30 y Random Forest 27. Para la MLP se compararon la
+configuración de referencia, `RandomizedSearchCV` y un algoritmo genético (GA)
+con **100 evaluaciones de CV por método y corrida**, repetidos con las semillas
+42, 43 y 44. En todos los casos la métrica principal fue F1 macro. KNN eligió
+11 vecinos, distancia Manhattan y ponderación por distancia; SVM eligió
+`C = 45,71` y `gamma = 0,02481`; RF ajustado eligió 300 árboles, profundidad
+sin límite y dos muestras como mínimo por hoja. La MLP de referencia utiliza
+sus parámetros por defecto salvo `max_iter = 4000` y la semilla.
 
-| Modelo | F1 macro CV (media ± DE) | Exactitud CV (media ± DE) | ROC-AUC macro CV (media ± DE) |
+| Modelo | F1 macro CV (media ± DE) | Exactitud CV (media ± DE) | ROC-AUC OvR macro CV (media ± DE) |
 |---|---:|---:|---:|
 | Dummy (clase más frecuente) | 0,129 ± 0,039 | 0,363 ± 0,146 | 0,500 ± 0,000 |
 | Dummy (estratificado) | 0,250 ± 0,028 | 0,278 ± 0,026 | 0,510 ± 0,017 |
 | KNN ajustado | 0,528 ± 0,107 | 0,516 ± 0,149 | 0,792 ± 0,085 |
 | SVM RBF ajustada | 0,767 ± 0,087 | 0,766 ± 0,092 | 0,938 ± 0,046 |
+| Random Forest por defecto | 0,705 ± 0,132 | 0,694 ± 0,170 | 0,874 ± 0,086 |
+| Random Forest ajustado | 0,715 ± 0,140 | 0,704 ± 0,177 | 0,870 ± 0,094 |
+| MLP de referencia (semilla 42) | 0,725 ± 0,089 | 0,726 ± 0,128 | 0,916 ± 0,045 |
+| MLP + búsqueda aleatoria (semilla 42) | 0,808 ± 0,077 | 0,811 ± 0,094 | 0,955 ± 0,029 |
+| **MLP + GA (semilla 42)** | **0,812 ± 0,054** | **0,821 ± 0,062** | **0,955 ± 0,025** |
 
-La tabla completa, con hiperparámetros y tiempos de entrenamiento e inferencia,
-se genera en `reports/resultados.csv`; contiene por ahora solo los modelos ya
-evaluados. `t_inferencia` mide el tiempo de `predict_proba` por lote de
-validación, en segundos, sin incluir el cálculo de las métricas. En esta
-ejecución, el tiempo medio de entrenamiento por pliegue fue cercano a 0,01 s
-para KNN y 0,19 s para SVM; el de inferencia fue cercano a 0,01 s para ambos.
-Los valores dependen del equipo y de su carga de trabajo.
+La tabla íntegra de **16 filas** está en `reports/resultados.csv`, formada a
+partir de los archivos individuales de cada integrante. La MLP por defecto de
+Dayron y la «MLP defecto (semilla 42)» de José son **la misma configuración y
+los mismos cinco resultados**, por lo que aparecen una sola vez en la tabla
+resumida y no se cuentan como dos modelos ni como corridas independientes.
+Las otras seis filas de MLP corresponden a las semillas 43 y 44 de los tres
+métodos. Esta tabla presenta CV; todavía no contiene resultados de prueba.
 
-La matriz de confusión con predicciones fuera de pliegue muestra que KNN
-identifica solo 180 de los 686 ciclos de 90 bar (recall 0,262), mientras que la
-SVM identifica 472 (recall 0,688). Para la SVM, los recall de 100, 115 y 130
-bar son 0,861, 0,754 y 0,840. La precisión, el recall y el F1 de cada clase
-se encuentran en `reports/metricas_clase_luis.csv` y las matrices en
-`reports/figuras/matrices_confusion_luis.png`. Los cinco resultados por pliegue
-se conservan en `reports/pliegues_luis.csv`.
+| Método MLP | F1 macro medio de CV, promedio de tres corridas ± DE entre corridas |
+|---|---:|
+| Referencia | 0,7254 ± 0,0049 |
+| Búsqueda aleatoria | 0,8061 ± 0,0021 |
+| Algoritmo genético | 0,8093 ± 0,0047 |
 
-## Discusión (parcial)
+Los tiempos de `reports/resultados.csv` documentan el ajuste por pliegue de
+la configuración seleccionada y la inferencia de `predict_proba` por lote de
+validación; **no** incluyen el coste completo de las búsquedas. Los
+experimentos de los integrantes cambiaron el paralelismo, por lo que esos
+tiempos no son directamente comparables entre métodos y no sustentan una
+conclusión de mayor velocidad. Las métricas por pliegue, clase y matriz de
+confusión constan en los archivos `reports/pliegues_*.csv`,
+`reports/metricas_clase_*.csv` y `reports/matrices_confusion_*.csv` y en las
+figuras de `reports/figuras/`.
 
-Entre los dos modelos clásicos ajustados, la SVM presenta mayor F1 macro medio
-y mayor ROC-AUC que KNN. Esto **no** decide todavía el modelo final: faltan los
-resultados de Random Forest, MLP y la optimización genética, que deben
-compararse con el mismo criterio y presupuesto acordados por el equipo. Además,
-los hiperparámetros se eligieron y se describieron con los mismos pliegues de
-entrenamiento; las cifras de CV pueden ser optimistas por selección de modelo.
-La comprobación independiente será la evaluación única sobre la prueba
-reservada, una vez tomada la decisión conjunta.
+Las predicciones fuera de pliegue muestran un error importante para la
+seguridad: de los 686 ciclos reales de 90 bar, KNN etiquetó 180 correctamente,
+SVM 472 y RF ajustado 358. La **MLP+GA de semilla 42 identificó 551** (recall
+0,803; F1 de esa clase 0,871). Esta última confundió solo **2 de 686 ciclos de
+90 bar con 130 bar**; SVM confundió 69 y RF ajustado 213. Los otros 133 ciclos
+de 90 bar errados por la MLP+GA se asignaron a 100 bar (60) o 115 bar (73).
+Son predicciones de CV sobre entrenamiento, no la evaluación reservada.
 
-Para el criterio de éxito (c), las tres corridas del GA se compararán con las
-tres de búsqueda aleatoria bajo el mismo presupuesto de evaluaciones y con la
-dispersión de la validación cruzada. Solo se afirmará una mejora si la
-diferencia supera el umbral fijado por el contrato. En caso contrario se
-informará que **no se observó una mejora clara**, sin afirmar equivalencia
-estadística. Aún no se dispone de esos resultados.
+## Selección, confianza y explicación
+
+El equipo eligió **MLP+GA (semilla 42)** por el F1 macro medio de CV más alto
+de la tabla (0,8123 ± 0,0543). Usa una capa de 64 neuronas, activación `tanh`,
+`alpha = 0,003513`, tasa de aprendizaje inicial `0,002670` y
+`max_iter = 4000`. La diferencia con otras configuraciones optimizadas es
+pequeña; la elección sigue la regla del contrato y no demuestra por sí sola
+que el GA sea superior como método de búsqueda. Dayron reentrenará ese
+pipeline con todo el entrenamiento y hará la única evaluación en prueba el
+27/oct. Esta evaluación aún no se ha efectuado.
+
+José calculó el umbral de baja confianza con probabilidades **fuera de
+pliegue**, siempre sobre entrenamiento. El umbral **0,87** es el menor de su
+rejilla que logra al menos 90 % de exactitud entre predicciones aceptadas:
+acepta **1.206 de 1.827 ciclos (66,0 %)** con exactitud **90,1 %**, y marca
+621 (34,0 %) para revisión. Sin umbral la exactitud de estas predicciones es
+82,9 %. La estimación del 90,1 % es frágil: el intervalo de remuestreo por
+grupos va de 84,5 a 94,6 % y la exactitud de los aceptados varía de 78,9 a
+97,9 % entre pliegues. El umbral se seleccionó y midió con los mismos datos
+de entrenamiento, de modo que puede ser optimista. Las probabilidades de la
+MLP no están calibradas: 0,87 es un corte operativo, no una garantía de acierto.
+
+La explicación difusa de José usa `PS5_max`, `PS3_mean` y `PS1_mean`, elegidas
+tras el EDA. Los percentiles 25, 50 y 75 del entrenamiento definen grados de
+presión baja, media y alta. Si las tres variables están bajas, la regla apunta
+a 130 bar; si alguna está alta, apunta a **menos de 130 bar**. Valores
+intermedios no dan una pista clara. Las variables no son redundantes entre sí
+(|r| máximo 0,76), pero las clases 90, 100 y 115 bar se solapan. Por ello la
+regla no distingue esos tres niveles ni explica cómo decide la MLP, que usa
+68 variables. Si la pista y la predicción discrepan, la interfaz debe invitar
+a revisar el ciclo sin cambiar la clase predicha. Tanto los percentiles como
+la comprobación de las reglas provienen de entrenamiento, sin usar prueba.
+
+## Discusión
+
+La SVM obtuvo mejor F1 macro CV que KNN, RF y la MLP de referencia, pero las
+MLP optimizadas la superaron. La mejora del RF ajustado frente a su referencia
+fue 0,0102 en F1 macro medio, pequeña respecto a las desviaciones entre
+pliegues (0,132 y 0,140). El modelo elegido, MLP+GA de semilla 42, supera el
+criterio (a): su F1 macro CV de 0,8123 está por encima de la mejor línea base,
+Dummy estratificado, 0,2498 ± 0,0280, incluso al exigir más de dos
+desviaciones de distancia (umbral aproximado 0,306). El criterio (b), que
+contrasta CV con prueba, **sigue pendiente**. Las búsquedas de hiperparámetros
+y la descripción posterior usan los mismos pliegues; estos F1 de CV pueden
+estar favorecidos por la selección.
+
+En el criterio (c), el GA promedió 0,8093 en las tres corridas frente a 0,8061
+de la búsqueda aleatoria: ventaja de **0,0032**, menor que la variación entre
+pliegues de CV (del orden de 0,06 a 0,08). Con el presupuesto común de 100
+evaluaciones por corrida **no se observó una mejora clara** del GA. Tampoco
+se puede afirmar equivalencia estadística con solo tres corridas por método.
 
 El error más delicado es presentar como menos grave un acumulador de 90 bar.
-En las predicciones fuera de pliegue, la SVM asignó **69 de esos 686 ciclos a
-130 bar** (10,1 %), la clase óptima. Un técnico podría retrasar una inspección
-necesaria si interpretara esa salida como diagnóstico definitivo. El prototipo
-debe mostrar probabilidades, una señal de baja confianza y una advertencia de
-que se trata de apoyo a la decisión. También debe comprobarse específicamente
-si la marca de confianza detecta este tipo de error; una probabilidad alta no
-garantiza que la predicción sea correcta ni calibrada. En el otro sentido, una
-falsa alarma puede causar una revisión innecesaria y tiempo perdido.
+La MLP+GA elegida redujo la confusión de 90 con 130 bar a dos casos en las
+predicciones fuera de pliegue, pero no eliminó todos los errores: 135 de los
+686 ciclos de 90 bar quedaron en otra clase. Un técnico podría retrasar una
+inspección necesaria si interpreta la predicción como diagnóstico definitivo.
+El prototipo debe mostrar probabilidades, marca de baja confianza y un aviso
+de apoyo a la decisión. Aún no se ha medido si el umbral 0,87 marca justamente
+los dos errores extremos; una probabilidad alta tampoco garantiza corrección.
+En el otro sentido, una falsa alarma puede causar una revisión innecesaria.
 
 Las cifras publicadas sobre este conjunto de datos no son comparables de
 manera directa: varios trabajos estudian componentes distintos, resumen las
@@ -146,15 +206,15 @@ para predecir ciclos futuros respondería a otra pregunta y no se realizó.
 
 ### Pendiente para integrar la versión final
 
-1. Incorporar filas de Random Forest, MLP y GA de Dayron y José a la tabla
-   única, con métricas por clase, matrices, cinco pliegues y tiempos
-   comparables.
-2. Seleccionar entre los tres integrantes **un solo modelo** por F1 macro,
-   estabilidad, complejidad, inferencia y errores relevantes de 90 bar.
-3. Tras la reunión acordada, añadir la evaluación **única** en prueba y
-   discutir cualquier caída respecto a CV.
-4. Integrar la explicación difusa o análisis de confianza de José, las
-   implicaciones éticas y la conclusión conjunta.
+1. Incorporar la evaluación **única** en prueba que realizará Dayron el
+   27/oct, por separado de CV; analizar el criterio (b), las métricas por clase
+   y la confusión de 90 con 130 bar. No volver a escoger hiperparámetros con
+   esos resultados.
+2. Verificar las capturas del prototipo con el modelo final, la marca de baja
+   confianza y la explicación difusa, incluidos casos de entrada inválida.
+3. Integrar este aporte con el marco teórico de José y las conclusiones y
+   referencias finales del equipo; preparar la presentación de máximo diez
+   diapositivas con las cifras de prueba cuando estén disponibles.
 
 ### Referencia del conjunto de datos
 
@@ -165,7 +225,9 @@ https://doi.org/10.24432/C5CW21
 ### Registro para el anexo de uso de IA
 
 El 22/oct/2026 Luis utilizó Codex como apoyo para implementar y revisar el
-`Pipeline`, preparar y ejecutar los notebooks de EDA y KNN/SVM, verificar las
-tablas y gráficas y redactar este borrador. Los resultados numéricos proceden
-de ejecuciones reproducibles sobre los datos de entrenamiento, no de la IA.
-Luis es el autor y responsable de revisar e interpretar estos aportes.
+`Pipeline`, preparar y ejecutar los notebooks de EDA y KNN/SVM, verificar sus
+tablas y gráficas y redactar la primera versión. El 23/oct/2026 lo usó para
+contrastar los CSV y notebooks ya publicados por José y Dayron e integrar sus
+resultados de CV, el análisis de confianza y la explicación difusa en el
+borrador. Los números proceden de los experimentos del equipo, no de la IA.
+Luis es responsable de revisar las interpretaciones y el texto final.
