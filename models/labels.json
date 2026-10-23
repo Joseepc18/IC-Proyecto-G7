@@ -1,0 +1,18 @@
+{
+  "0": {
+    "bar": 90,
+    "estado": "falla_cercana"
+  },
+  "1": {
+    "bar": 100,
+    "estado": "muy_reducida"
+  },
+  "2": {
+    "bar": 115,
+    "estado": "algo_reducida"
+  },
+  "3": {
+    "bar": 130,
+    "estado": "optima"
+  }
+}
