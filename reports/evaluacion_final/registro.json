@@ -1,0 +1,8 @@
+{
+  "fecha_inicio_utc": "2026-10-24T02:32:00.668892+00:00",
+  "estado": "completada",
+  "modelo_sha256": "36e0d201a8cfb7804c8cd5c1d612375db17b1774a4b6361f320edc72ce74b34f",
+  "split_sha256": "0a992a308ccd7f1ee4cd9fd385c926c549f2a278e2510a5cb3b21da462cad4e7",
+  "confirmacion": "Quien ejecuta confirma la evaluación única acordada y la selección previa del modelo.",
+  "fecha_fin_utc": "2026-10-24T02:32:00.803207+00:00"
+}
