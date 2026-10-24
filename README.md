@@ -33,11 +33,51 @@ UCI Machine Learning Repository.
 
 - **DOI:** [10.24432/C5CW21](https://doi.org/10.24432/C5CW21).
 - **Licencia de los datos:** [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+- **Fecha de consulta:** 23 de octubre de 2026.
 
 Los datos originales contienen 2205 ciclos de 60 segundos y mediciones de
 17 sensores. Para este proyecto, las series se transforman en las 68 estadísticas
 descritas en el formato del CSV. Se reconoce la autoría del conjunto original;
 esta referencia de licencia corresponde a los datos.
+
+### Diccionario de variables
+
+Cada sensor se resume en cuatro estadísticos por ciclo (`mean`, `std`, `min`,
+`max`); la columna se llama `{sensor}_{estadístico}`, por ejemplo `PS1_mean`.
+
+| Sensor | Magnitud | Unidad | Frecuencia original |
+|---|---|---|---|
+| PS1–PS6 | Presión | bar | 100 Hz |
+| EPS1 | Potencia del motor | W | 100 Hz |
+| FS1, FS2 | Caudal | l/min | 10 Hz |
+| TS1–TS4 | Temperatura | °C | 1 Hz |
+| VS1 | Vibración | mm/s | 1 Hz |
+| CE | Eficiencia de refrigeración (sensor virtual) | % | 1 Hz |
+| CP | Potencia de refrigeración (sensor virtual) | kW | 1 Hz |
+| SE | Factor de eficiencia | % | 1 Hz |
+
+Variable objetivo: presión del acumulador (`accumulator`), codificada como
+90 bar → 0, 100 bar → 1, 115 bar → 2 y 130 bar → 3. El estado de los demás
+componentes (`cooler`, `valve`, `pump_leak`) y la anotación `stable` no son
+entradas del modelo.
+
+### Limitaciones
+
+- **Un único banco de pruebas de laboratorio**, con 144 combinaciones de estados
+  de componentes. No se sabe cómo generaliza a otras instalaciones.
+- Los niveles de presión se **fijaron a propósito** en el banco; no son una
+  degradación natural y gradual.
+- **Clases desiguales:** 808, 399, 399 y 599 ciclos (90, 100, 115 y 130 bar).
+  Por eso la métrica principal es el F1 macro.
+- **Grupos desiguales:** tres combinaciones suman el 36,8 % del entrenamiento
+  (672 ciclos), de modo que la validación cruzada varía mucho entre pliegues.
+- **Una sola evaluación en prueba** (378 ciclos de 33 grupos), sin intervalo de
+  confianza.
+- Las probabilidades **no están calibradas**, y el umbral de baja confianza
+  (0,87) se calibró con datos de entrenamiento, por lo que es algo optimista.
+- La app **no verifica la fiabilidad fuera del rango de entrenamiento**: procesa
+  el ciclo con una advertencia y el modelo puede responder con probabilidad alta.
+- Es una **ayuda a la decisión** para revisión humana, no un diagnóstico.
 
 ## Integrantes
 
@@ -67,9 +107,10 @@ data/
   processed/
     features.csv               Datos preparados (generado; no se sube a Git)
     split.csv                  Partición compartida de entrenamiento y prueba
-notebooks/                     Espacio para análisis y experimentos
-models/                        Destino del modelo final y las etiquetas
-reports/                       Resultados y figuras
+notebooks/                     01 EDA · 02 KNN y SVM · 03 algoritmo genético · 04 Random Forest y MLP, umbral de confianza · 05 explicación difusa
+models/                        Modelo final entrenado, etiquetas y metadatos
+reports/                       Resultados, figuras y evaluación final
+  prototipo/                   CSV de entrada y capturas de las pruebas de la app
 tests/                         Comprobaciones de datos, modelos y prototipo
 requirements.txt               Dependencias del proyecto
 pyproject.toml                 Configuración del paquete local
@@ -259,3 +300,28 @@ clase estimada, lo indica. Con varios ciclos se puede leer la explicación de ca
 uno y descargarla junto a las probabilidades y las marcas de advertencia.
 Si faltan los artefactos o no superan las comprobaciones, muestra el error y
 detiene el análisis.
+
+## Pruebas de la aplicación (casos de uso)
+
+Cuatro entradas, todas basadas en ciclos de **entrenamiento** (nunca de prueba),
+en [reports/prototipo/entradas/](reports/prototipo/entradas/), con la captura de
+cada resultado en [reports/prototipo/capturas/](reports/prototipo/capturas/).
+Comprobadas el 24/oct/2026 con la app local.
+
+Para repetirlas: abrir la app (sección anterior), elegir **Subir CSV**, cargar
+el archivo y pulsar **Analizar datos**.
+
+| Caso | Archivo de entrada | Qué es | Resultado esperado |
+|---|---|---|---|
+| 1. Ciclo normal | `caso1_normal.csv` | Ciclo de entrenamiento `cycle_id` 612 (90 bar reales) | 90 bar con 100,0 %, sin aviso de baja confianza |
+| 2. Baja confianza | `caso2_baja_confianza.csv` | Ciclo de entrenamiento `cycle_id` 1321 (100 bar reales) | 100 bar con 75,8 %, por debajo del umbral 0,87: aviso de baja confianza |
+| 3. Caso límite | `caso3_fuera_de_rango.csv` | Caso 1 con `PS1_mean` = 240,867 (el máximo de entrenamiento es 180,867) | Se procesa con advertencia y marca `Fuera de rango`; responde 90 bar con 100,0 %: una probabilidad alta no garantiza fiabilidad fuera del rango |
+| 4. Entrada inválida | `caso4_columna_faltante.csv` | Caso 1 sin la columna `PS2_std` | Se rechaza el archivo completo (`Faltan columnas: PS2_std`) y no hay predicción |
+
+![Caso 1: ciclo normal](reports/prototipo/capturas/caso1_normal.png)
+![Caso 2: baja confianza](reports/prototipo/capturas/caso2_baja_confianza.png)
+![Caso 3: fuera de rango](reports/prototipo/capturas/caso3_fuera_de_rango.png)
+![Caso 4: columna faltante](reports/prototipo/capturas/caso4_columna_faltante.png)
+
+La explicación difusa del caso 2 indica valores intermedios o mezclados; es una
+lectura de tendencias, no cambia la predicción.
