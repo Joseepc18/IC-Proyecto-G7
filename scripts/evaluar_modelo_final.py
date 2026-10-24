@@ -1,4 +1,4 @@
-"""Evaluación única, para ejecutar el 27/oct según el acuerdo del equipo."""
+"""Evaluación final única del modelo elegido sobre la partición reservada."""
 import argparse
 from ic_g7.modelo_final import evaluar_prueba_una_vez
 

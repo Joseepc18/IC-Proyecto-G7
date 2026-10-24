@@ -1,0 +1,54 @@
+{
+  "fecha_utc": "2026-10-24T02:32:00.790428+00:00",
+  "modelo": "MLP+GA (semilla 42)",
+  "pipeline_sha256": "36e0d201a8cfb7804c8cd5c1d612375db17b1774a4b6361f320edc72ce74b34f",
+  "ciclos_prueba": 378,
+  "grupos_prueba": 33,
+  "f1_macro_prueba": 0.8078173888817453,
+  "exactitud_prueba": 0.8148148148148148,
+  "roc_auc_ovr_macro_prueba": 0.956253139214211,
+  "segundos_inferencia_lote": 0.07556059991475195,
+  "segundos_reentrenamiento": 1.7337315999902785,
+  "orden_matriz_bar": [
+    90,
+    100,
+    115,
+    130
+  ],
+  "matriz_confusion": [
+    [
+      108,
+      11,
+      3,
+      0
+    ],
+    [
+      0,
+      59,
+      23,
+      0
+    ],
+    [
+      0,
+      0,
+      72,
+      10
+    ],
+    [
+      1,
+      0,
+      22,
+      69
+    ]
+  ],
+  "criterio_b": {
+    "limite_cv_menos_2_std": 0.7037,
+    "cumple": true,
+    "nota": "Referencia de CV redondeada del CSV; no se ajusta el modelo ni se repite prueba si el criterio no se cumple."
+  },
+  "confianza": {
+    "umbral": 0.87,
+    "origen": "Probabilidades OOF de entrenamiento; no se recalibra con prueba.",
+    "tendencias": "Las reglas difusas describen sensores y no explican cómo decide la MLP."
+  }
+}

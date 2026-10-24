@@ -147,8 +147,8 @@ no incluyen la búsqueda ni la segunda pasada OOF; el coste de búsqueda se info
 por separado. Las diferencias pequeñas no prueban superioridad ni equivalencia.
 
 Esta ejecución no consulta prueba, no exporta el modelo final y no modifica
-Streamlit ni la tabla consolidada. La evaluación única en prueba y la integración
-del modelo y del umbral corresponden a las siguientes etapas del equipo.
+Streamlit ni la tabla consolidada. La preparación del modelo, su evaluación final
+y la aplicación se describen en las secciones siguientes.
 
 ## Tabla de resultados
 
@@ -157,7 +157,7 @@ Cada persona escribe sus modelos en `reports/resultados_<nombre>.csv` y no edita
 
 Regenerarla desde la raíz del repositorio, cuando ya estén todos los
 `resultados_<nombre>.csv` en la rama y antes de usar la tabla (comparación en el
-informe o en la evaluación del 27/oct):
+informe o en la evaluación final):
 
 ```powershell
 & ".\.venv\Scripts\python.exe" scripts/consolidar_resultados.py
@@ -170,14 +170,11 @@ es un número finito no negativo.
 ## Modelo elegido y evaluación final
 
 Se utiliza **MLP+GA (semilla 42)**, con la configuración registrada en
-`reports/resultados_jose.csv`. Desde la raíz del repositorio, con el entorno y
-los datos preparados, reentrenar con los **1827 ciclos de entrenamiento**:
-
-```powershell
-& ".\.venv\Scripts\python.exe" scripts/entrenar_modelo_final.py
-```
-
-Genera en `models/`:
+`reports/resultados_jose.csv`. El modelo entregado ya está entrenado con los
+**1827 ciclos de entrenamiento**; su preparación está implementada en
+[scripts/entrenar_modelo_final.py](scripts/entrenar_modelo_final.py).
+No hace falta reentrenarlo para usar la app ni consultar los resultados.
+Los artefactos guardados en `models/` son:
 
 - `pipeline_final.joblib`: pipeline completo entrenado.
 - `labels.json`: clases, presiones y estados.
@@ -185,17 +182,26 @@ Genera en `models/`:
 
 El script no utiliza prueba y rechaza sobrescribir artefactos existentes.
 
-**La evaluación de los 378 ciclos de prueba se realiza una sola vez el martes
-27/oct.** Según el acuerdo actualizado, no requiere reunión ni la presencia
-simultánea de los tres integrantes. En esa fecha:
+**Evaluación final completada** con los 378 ciclos de prueba de 33 grupos,
+sin reentrenar ni ajustar el modelo. Resultados: **F1 macro 0,8078**, **exactitud
+81,48 % (308 de 378 ciclos)** y **ROC-AUC macro OVR 0,9563**. Se cumple el criterio
+(b): F1 macro ≥ 0,7037 (media de CV menos dos desviaciones).
+
+Los archivos quedan en [reports/evaluacion_final/](reports/evaluacion_final/):
+
+- `informe.json`: métricas globales, matriz de confusión y criterio (b).
+- `metricas_clase.csv`: precisión, recall, F1 y soporte por categoría.
+- `predicciones.csv`: respuesta real, predicción y probabilidades por ciclo.
+- `registro.json`: constancia de la ejecución completada y hashes de modelo y partición.
+- `matriz_confusion.png`: figura generada desde el informe guardado.
+
+**No volver a ejecutar la evaluación ni borrar el registro.** El evaluador bloquea
+nuevos intentos; las consultas y figuras posteriores usan los archivos guardados.
+Para regenerar únicamente la figura, sin cargar el modelo ni prueba:
 
 ```powershell
-& ".\.venv\Scripts\python.exe" scripts/evaluar_modelo_final.py --confirmar-evaluacion
+& ".\.venv\Scripts\python.exe" scripts/graficar_evaluacion_final.py
 ```
-
-Guarda las métricas, la matriz de confusión, las predicciones y el registro en
-`reports/evaluacion_final/`. Bloquea nuevos intentos incluso si hubo un fallo;
-en ese caso se revisa con el equipo sin borrar el registro.
 
 Ejecutar las pruebas locales:
 
