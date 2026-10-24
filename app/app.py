@@ -7,7 +7,7 @@ from ic_g7 import config
 from ic_g7.interfaz import componentes as ui
 from ic_g7.interfaz.tema import aplicar_tema
 from ic_g7.inferencia import preparar_aplicacion, predecir_ciclos
-from ic_g7.prototipo import validar_csv
+from ic_g7.prototipo import detectar_fuera_de_rango, validar_csv
 
 st.set_page_config(
     page_title="Estado del acumulador",
@@ -19,7 +19,7 @@ st.set_page_config(
 
 @st.cache_resource(show_spinner="Preparando la aplicación...")
 def cargar_recursos(firma_archivos):
-    """Reutiliza el modelo validado hasta que cambien sus archivos o los datos."""
+    """Reutiliza el modelo, el ejemplo y la referencia difusa entre análisis."""
     return preparar_aplicacion()
 
 
@@ -39,14 +39,17 @@ aplicar_tema()
 ui.cabecera()
 
 try:
-    rutas = [config.RUTA_FEATURES, config.RUTA_SPLIT] + [
+    rutas = [
+        config.RUTA_FEATURES, config.RUTA_SPLIT,
+        config.RAIZ / "src" / "ic_g7" / "difuso.py",
+    ] + [
         config.DIR_MODELOS / nombre
         for nombre in ("pipeline_final.joblib", "labels.json", "metadata_final.json")
     ]
     firma_recursos = tuple(
         (str(ruta), ruta.stat().st_mtime_ns, ruta.stat().st_size) for ruta in rutas
     )
-    modelo, etiquetas, entrenamiento, limites = cargar_recursos(firma_recursos)
+    modelo, etiquetas, entrenamiento, limites, referencia = cargar_recursos(firma_recursos)
 except (OSError, ValueError) as exc:
     ui.barra_lateral(1)
     st.error(f"No se pudo cargar el modelo final o los datos de ejemplo: {exc}")
@@ -108,10 +111,11 @@ if firma != st.session_state.get("firma_entrada"):
     limpiar_respuesta()
     st.session_state["firma_entrada"] = firma
 
-datos, error = None, None
+datos, error, fuera = None, None, None
 if contenido is not None:
     try:
-        datos = validar_csv(contenido, limites)
+        datos = validar_csv(contenido)
+        fuera = detectar_fuera_de_rango(datos, limites)
     except ValueError as exc:
         error = str(exc)
 
@@ -121,14 +125,14 @@ with izquierda:
         ui.vista_previa(datos)
 with derecha:
     with st.container(key="panel_validacion"):
-        ui.validacion(datos, error)
+        ui.validacion(datos, error, fuera)
     analizar = st.button(
         "Analizar datos", type="primary", disabled=datos is None,
         icon=":material/monitoring:", width="stretch", key="analizar",
     )
     if analizar:
         try:
-            st.session_state["resultado"] = predecir_ciclos(modelo, etiquetas, datos)
+            st.session_state["resultado"] = predecir_ciclos(modelo, etiquetas, datos, limites, referencia)
         except ValueError as exc:
             limpiar_respuesta()
             st.error(f"No se pudieron analizar los datos: {exc}")

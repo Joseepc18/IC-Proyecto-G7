@@ -1,7 +1,7 @@
 """Comprobaciones de entradas y de la app, usando únicamente entrenamiento."""
 import unittest
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from pathlib import Path
 
 import numpy as np
@@ -10,7 +10,7 @@ from streamlit.testing.v1 import AppTest
 
 from ic_g7 import config
 from ic_g7.inferencia import preparar_aplicacion, predecir_ciclos
-from ic_g7.prototipo import MAX_BYTES_CSV, validar_csv
+from ic_g7.prototipo import MAX_BYTES_CSV, detectar_fuera_de_rango, validar_csv
 
 
 def mostrar_resultado(resultado):
@@ -19,10 +19,16 @@ def mostrar_resultado(resultado):
     respuesta(resultado)
 
 
+def mostrar_validacion(datos, error, fuera):
+    from ic_g7.interfaz.componentes import validacion
+
+    validacion(datos, error, fuera)
+
+
 class PruebasPrototipo(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.modelo, cls.etiquetas, cls.X, cls.limites = preparar_aplicacion()
+        cls.modelo, cls.etiquetas, cls.X, cls.limites, cls.referencia = preparar_aplicacion()
 
     def csv(self, tabla):
         return tabla.to_csv(index=False).encode("utf-8")
@@ -34,13 +40,13 @@ class PruebasPrototipo(unittest.TestCase):
             self.limites["minimo"].to_frame().T,
             self.limites["maximo"].to_frame().T,
         ], ignore_index=True)
-        resultado = validar_csv(self.csv(validos), self.limites)
+        resultado = validar_csv(self.csv(validos))
         self.assertEqual(resultado.shape, validos.shape)
         np.testing.assert_allclose(resultado, validos, rtol=1e-12, atol=1e-12)
 
     def test_columnas_desordenadas_se_normalizan_y_bom_se_acepta(self):
         tabla = self.X.head(1).iloc[:, ::-1]
-        resultado = validar_csv(b"\xef\xbb\xbf" + self.csv(tabla), self.limites)
+        resultado = validar_csv(b"\xef\xbb\xbf" + self.csv(tabla))
         self.assertEqual(list(resultado.columns), config.COLUMNAS_ENTRADA)
 
     def test_columnas_faltantes_y_etiquetas_se_rechazan(self):
@@ -54,7 +60,7 @@ class PruebasPrototipo(unittest.TestCase):
         for tabla in casos:
             with self.subTest(columnas=tabla.columns.tolist()):
                 with self.assertRaises(ValueError):
-                    validar_csv(self.csv(tabla), self.limites)
+                    validar_csv(self.csv(tabla))
 
     def test_duplicados_y_cantidad_de_campos_se_rechazan(self):
         texto = self.csv(self.X.head(1)).decode()
@@ -69,16 +75,15 @@ class PruebasPrototipo(unittest.TestCase):
         for caso in casos:
             with self.subTest(caso=caso[:50]):
                 with self.assertRaises(ValueError):
-                    validar_csv(caso.encode(), self.limites)
+                    validar_csv(caso.encode())
 
-    def test_vacios_nulos_texto_infinitos_y_fuera_de_rango(self):
-        for valor in ["", "NaN", "abc", "inf", "-inf",
-                      self.limites.iloc[0]["maximo"] + 10]:
+    def test_vacios_nulos_texto_e_infinitos_se_rechazan(self):
+        for valor in ["", "NaN", "abc", "inf", "-inf"]:
             tabla = self.X.head(1).astype(object).copy()
             tabla.iloc[0, 0] = valor
             with self.subTest(valor=valor):
                 with self.assertRaises(ValueError):
-                    validar_csv(self.csv(tabla), self.limites)
+                    validar_csv(self.csv(tabla))
 
     def test_archivo_vacio_sin_registros_codificacion_y_tamano(self):
         casos = [
@@ -88,14 +93,14 @@ class PruebasPrototipo(unittest.TestCase):
         for contenido in casos:
             with self.subTest(bytes=len(contenido)):
                 with self.assertRaises(ValueError):
-                    validar_csv(contenido, self.limites)
+                    validar_csv(contenido)
 
     def test_salida_mapea_clases_a_bar_y_probabilidades(self):
         # Se comprueba el mapeo real de las cuatro clases, no una salida fija.
         predichas = self.modelo.predict(self.X)
         indices = [np.flatnonzero(predichas == c)[0] for c in self.modelo.classes_]
         entrada = self.X.iloc[indices]
-        resultado = predecir_ciclos(self.modelo, self.etiquetas, entrada)
+        resultado = predecir_ciclos(self.modelo, self.etiquetas, entrada, self.limites, self.referencia)
         self.assertEqual(len(resultado), 4)
         self.assertEqual(resultado["Acumulador (bar)"].tolist(), [90, 100, 115, 130])
         np.testing.assert_allclose(
@@ -119,9 +124,9 @@ class PruebasPrototipo(unittest.TestCase):
             def predict(self, X):
                 return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
-        resultado = predecir_ciclos(ModeloFijo(), self.etiquetas, self.X.head(3))
+        resultado = predecir_ciclos(ModeloFijo(), self.etiquetas, self.X.head(3), self.limites, self.referencia)
         self.assertEqual(resultado["Baja confianza"].tolist(), [True, False, False])
-        real = predecir_ciclos(self.modelo, self.etiquetas, self.X.head(3))
+        real = predecir_ciclos(self.modelo, self.etiquetas, self.X.head(3), self.limites, self.referencia)
         np.testing.assert_array_equal(
             real["Baja confianza"],
             self.modelo.predict_proba(self.X.head(3)).max(axis=1) < config.UMBRAL_CONFIANZA,
@@ -148,6 +153,7 @@ class PruebasPrototipo(unittest.TestCase):
         resultado = app.session_state["resultado"]
         esperada = int(self.modelo.predict(self.X.head(1))[0])
         self.assertEqual(resultado.iloc[0]["Acumulador (bar)"], self.etiquetas[str(esperada)]["bar"])
+        self.assertTrue(any(m.value == resultado.iloc[0]["Lectura de sensores"] for m in app.markdown))
         # La respuesta permanece al actualizar, pero desaparece al cambiar de entrada.
         app.run()
         self.assertIsNotNone(app.session_state["resultado"])
@@ -167,8 +173,10 @@ class PruebasPrototipo(unittest.TestCase):
             patch.object(Pipeline, "fit", side_effect=AssertionError("No entrenar en la app")),
             patch("ic_g7.datos.cargar_prueba", side_effect=AssertionError("No consultar prueba")),
         ):
-            modelo, etiquetas, X, _ = preparar_aplicacion()
-            resultado = predecir_ciclos(modelo, etiquetas, X.head(10))
+            modelo, etiquetas, X, limites, referencia = preparar_aplicacion()
+            with patch("ic_g7.inferencia.referencia_desde_entrenamiento",
+                       side_effect=AssertionError("No recalcular la referencia al predecir")):
+                resultado = predecir_ciclos(modelo, etiquetas, X.head(10), limites, referencia)
         self.assertEqual(len(resultado), 10)
         np.testing.assert_array_equal(resultado["Registro"], np.arange(1, 11))
         self.assertTrue(resultado["Acumulador (bar)"].isin([90, 100, 115, 130]).all())
@@ -182,13 +190,87 @@ class PruebasPrototipo(unittest.TestCase):
 
     def test_interfaz_muestra_un_resultado_por_ciclo_sin_tablas_duplicadas(self):
         # El CSV subido pasa por la misma validación y predicción del ejemplo.
-        entrada = validar_csv(self.csv(self.X.head(10)), self.limites)
-        resultado = predecir_ciclos(self.modelo, self.etiquetas, entrada)
+        entrada = validar_csv(self.csv(self.X.head(10)))
+        resultado = predecir_ciclos(self.modelo, self.etiquetas, entrada, self.limites, self.referencia)
         app = AppTest.from_function(mostrar_resultado, args=(resultado,)).run(timeout=30)
         self.assertEqual(len(app.exception), 0)
         self.assertEqual(len(app.dataframe), 1)
-        self.assertEqual(app.dataframe[0].value.shape, (10, 8))
+        self.assertEqual(app.dataframe[0].value.shape, (10, 10))
+        explicacion = app.dataframe[0].value.iloc[0]["Lectura de sensores"]
+        self.assertTrue(any(m.value == explicacion for m in app.markdown))
+        app.selectbox[0].select(10).run()
+        self.assertTrue(any(m.value == resultado.iloc[9]["Lectura de sensores"] for m in app.markdown))
         self.assertEqual(len(app.get("download_button")), 1)
+
+
+    def test_fuera_de_rango_se_admite_sin_recortar_y_se_marca_por_ciclo(self):
+        tabla = self.X.head(2).copy()
+        tabla.iloc[1, 0] = self.limites.iloc[0]["maximo"] + 10
+        entrada = validar_csv(self.csv(tabla))
+        np.testing.assert_allclose(entrada, tabla)
+        fuera = detectar_fuera_de_rango(entrada, self.limites)
+        self.assertEqual(fuera.any(axis=1).tolist(), [False, True])
+        resultado = predecir_ciclos(
+            self.modelo, self.etiquetas, entrada, self.limites, self.referencia,
+        )
+        self.assertEqual(resultado["Fuera de rango"].tolist(), [False, True])
+        np.testing.assert_allclose(
+            resultado[[f"{b} bar (%)" for b in config.CLASE_POR_OBJETIVO]],
+            self.modelo.predict_proba(entrada) * 100,
+        )
+        app = AppTest.from_function(
+            mostrar_validacion, args=(entrada, None, fuera),
+        ).run(timeout=30)
+        self.assertEqual(len(app.exception), 0)
+        self.assertEqual(len(app.warning), 1)
+        self.assertIn("1 de 2", app.warning[0].value)
+        self.assertEqual(len(app.error), 0)
+
+    def test_redondeo_del_limite_no_produce_aviso(self):
+        tabla = self.X.head(1).copy()
+        maximo = self.limites.iloc[0]["maximo"]
+        tabla.iloc[0, 0] = maximo + 0.5e-10 * abs(maximo)
+        self.assertFalse(detectar_fuera_de_rango(tabla, self.limites).to_numpy().any())
+        tabla.iloc[0, 0] = maximo + 0.001
+        self.assertTrue(detectar_fuera_de_rango(tabla, self.limites).iloc[0, 0])
+
+    def test_explicacion_conserva_orden_y_recibe_la_clase_predicha(self):
+        from ic_g7.difuso import explicar
+
+        entrada = self.X.iloc[[8, 1, 6]]
+        resultado = predecir_ciclos(
+            self.modelo, self.etiquetas, entrada, self.limites, self.referencia,
+        )
+        clases = self.modelo.predict(entrada)
+        esperadas = [
+            explicar(entrada.iloc[i], self.referencia, clase_predicha=int(clase))
+            for i, clase in enumerate(clases)
+        ]
+        self.assertEqual(resultado["Lectura de sensores"].tolist(), esperadas)
+        self.assertEqual(resultado["Registro"].tolist(), [1, 2, 3])
+
+    def test_discrepancia_difusa_avisa_sin_cambiar_prediccion(self):
+        entrada = self.X.head(1).copy()
+        for variable, percentiles in self.referencia.items():
+            entrada.loc[0, variable] = percentiles[0]
+        modelo = Mock(classes_=np.array([0, 1, 2, 3]))
+        modelo.predict_proba.return_value = np.array([[1.0, 0.0, 0.0, 0.0]])
+        resultado = predecir_ciclos(
+            modelo, self.etiquetas, entrada, self.limites, self.referencia,
+        )
+        self.assertEqual(resultado.iloc[0]["Acumulador (bar)"], 90)
+        self.assertIn("no coincide", resultado.iloc[0]["Lectura de sensores"])
+
+    def test_fuera_de_rango_no_se_confunde_con_baja_confianza(self):
+        entrada = self.X.head(1).copy()
+        entrada.iloc[0, 0] = self.limites.iloc[0]["maximo"] + 10
+        modelo = Mock(classes_=np.array([0, 1, 2, 3]))
+        modelo.predict_proba.return_value = np.array([[0.0, 0.0, 0.0, 1.0]])
+        resultado = predecir_ciclos(
+            modelo, self.etiquetas, entrada, self.limites, self.referencia,
+        )
+        self.assertTrue(resultado.iloc[0]["Fuera de rango"])
+        self.assertFalse(resultado.iloc[0]["Baja confianza"])
 
 
 if __name__ == "__main__":

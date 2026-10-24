@@ -15,11 +15,11 @@ def _primera_celda(mascara: pd.DataFrame) -> str:
     return f"registro {fila + 1}, columna '{mascara.columns[columna]}'"
 
 
-def validar_csv(contenido: bytes, limites: pd.DataFrame) -> pd.DataFrame:
+def validar_csv(contenido: bytes) -> pd.DataFrame:
     """Lee un CSV de sensores o lanza ValueError con una explicación.
 
     Exige las 68 columnas, sin etiquetas ni identificadores. Devuelve números
-    finitos en el orden de config.COLUMNAS_ENTRADA, dentro del rango de train.
+    finitos en el orden de config.COLUMNAS_ENTRADA. El rango se revisa aparte.
     """
     if not contenido or not contenido.strip():
         raise ValueError("El archivo está vacío.")
@@ -89,18 +89,11 @@ def validar_csv(contenido: bytes, limites: pd.DataFrame) -> pd.DataFrame:
     if not finitos.to_numpy().all():
         raise ValueError("Hay valores infinitos: " + _primera_celda(~finitos) + ".")
 
+    return numeros.astype(float)
+
+
+def detectar_fuera_de_rango(datos: pd.DataFrame, limites: pd.DataFrame) -> pd.DataFrame:
+    """Marca valores fuera del rango observado sin cambiarlos ni rechazarlos."""
     # Tolerancia mínima para el redondeo de decimales al exportar/importar CSV.
     margen = 1e-12 + 1e-10 * limites.abs().max(axis=1)
-    fuera = numeros.lt(limites["minimo"] - margen) | numeros.gt(
-        limites["maximo"] + margen
-    )
-    if fuera.to_numpy().any():
-        fila, columna = np.argwhere(fuera.to_numpy())[0]
-        nombre = numeros.columns[columna]
-        minimo, maximo = limites.loc[nombre, ["minimo", "maximo"]]
-        raise ValueError(
-            f"Valor fuera del rango de entrenamiento en registro {fila + 1}, "
-            f"columna '{nombre}': {numeros.iloc[fila, columna]:.8g}. "
-            f"Rango permitido: [{minimo:.8g}, {maximo:.8g}]."
-        )
-    return numeros.astype(float)
+    return datos.lt(limites["minimo"] - margen) | datos.gt(limites["maximo"] + margen)
