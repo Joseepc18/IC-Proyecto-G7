@@ -25,6 +25,20 @@ se interpretan así:
 | **115 bar** | Presión algo reducida. |
 | **130 bar** | Presión óptima; es la condición de referencia en buen estado. |
 
+## Datos y licencia
+
+Se utiliza el conjunto [Condition monitoring of hydraulic systems](https://archive.ics.uci.edu/dataset/447/condition+monitoring+of+hydraulic+systems),
+de Nikolai Helwig, Eliseo Pignanelli y Andreas Schütze (2015), publicado en
+UCI Machine Learning Repository.
+
+- **DOI:** [10.24432/C5CW21](https://doi.org/10.24432/C5CW21).
+- **Licencia de los datos:** [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+Los datos originales contienen 2205 ciclos de 60 segundos y mediciones de
+17 sensores. Para este proyecto, las series se transforman en las 68 estadísticas
+descritas en el formato del CSV. Se reconoce la autoría del conjunto original;
+esta referencia de licencia corresponde a los datos.
+
 ## Integrantes
 
 - José Eduardo Ponce Carlos.
