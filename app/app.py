@@ -6,11 +6,8 @@ import streamlit as st
 from ic_g7 import config
 from ic_g7.interfaz import componentes as ui
 from ic_g7.interfaz.tema import aplicar_tema
-from ic_g7.prototipo import (
-    predecir_provisional,
-    preparar_prototipo,
-    validar_csv,
-)
+from ic_g7.inferencia import preparar_aplicacion, predecir_ciclos
+from ic_g7.prototipo import validar_csv
 
 st.set_page_config(
     page_title="Estado del acumulador",
@@ -21,9 +18,9 @@ st.set_page_config(
 
 
 @st.cache_resource(show_spinner="Preparando la aplicación...")
-def cargar_recursos(firma_features, firma_split):
-    """Reutiliza entrenamiento; invalida la caché si cambian los archivos."""
-    return preparar_prototipo()
+def cargar_recursos(firma_archivos):
+    """Reutiliza el modelo validado hasta que cambien sus archivos o los datos."""
+    return preparar_aplicacion()
 
 
 def limpiar_respuesta():
@@ -42,13 +39,21 @@ aplicar_tema()
 ui.cabecera()
 
 try:
-    modelo, entrenamiento, limites = cargar_recursos(
-        config.RUTA_FEATURES.stat().st_mtime_ns,
-        config.RUTA_SPLIT.stat().st_mtime_ns,
+    rutas = [config.RUTA_FEATURES, config.RUTA_SPLIT] + [
+        config.DIR_MODELOS / nombre
+        for nombre in ("pipeline_final.joblib", "labels.json", "metadata_final.json")
+    ]
+    firma_recursos = tuple(
+        (str(ruta), ruta.stat().st_mtime_ns, ruta.stat().st_size) for ruta in rutas
     )
+    modelo, etiquetas, entrenamiento, limites = cargar_recursos(firma_recursos)
 except (OSError, ValueError) as exc:
     ui.barra_lateral(1)
-    st.error(f"No se pudieron preparar los datos de entrenamiento: {exc}")
+    st.error(f"No se pudo cargar el modelo final o los datos de ejemplo: {exc}")
+    st.caption(
+        "Verifica los archivos pipeline_final.joblib, labels.json y metadata_final.json "
+        "en models/. Si faltan los datos, utiliza los comandos de preparación."
+    )
     st.code(
         "python scripts/descargar_datos.py\n"
         "python scripts/construir_features.py", language="text",
@@ -96,7 +101,9 @@ with st.container(key="panel_carga"):
 
 
 # El contenido y su origen identifican la entrada, incluso en los reruns de Streamlit.
-firma = (origen, hashlib.sha256(contenido).hexdigest()) if contenido is not None else None
+firma = (
+    origen, hashlib.sha256(contenido).hexdigest(), firma_recursos,
+) if contenido is not None else None
 if firma != st.session_state.get("firma_entrada"):
     limpiar_respuesta()
     st.session_state["firma_entrada"] = firma
@@ -120,7 +127,11 @@ with derecha:
         icon=":material/monitoring:", width="stretch", key="analizar",
     )
     if analizar:
-        st.session_state["resultado"] = predecir_provisional(modelo, datos)
+        try:
+            st.session_state["resultado"] = predecir_ciclos(modelo, etiquetas, datos)
+        except ValueError as exc:
+            limpiar_respuesta()
+            st.error(f"No se pudieron analizar los datos: {exc}")
 
 st.html('<div id="respuesta" class="ui-ancla"></div>')
 resultado = st.session_state.get("resultado")

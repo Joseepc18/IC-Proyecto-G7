@@ -44,7 +44,8 @@ src/ic_g7/
   pipeline.py                  Preparación común dentro de cada pliegue
   experimentos_dayron.py        Random Forest con búsqueda y MLP base
   modelo_final.py               Reentrenamiento y evaluación única reservada
-  prototipo.py                 Validación del CSV y modelo Dummy
+  prototipo.py                 Validación del CSV de sensores
+  inferencia.py                Carga del modelo final y predicción por ciclo
   interfaz/                    Componentes visuales y carga del tema
 scripts/                       Descarga y preparación de los datos
 data/
@@ -222,6 +223,9 @@ Iniciar la aplicación:
 Abrir http://127.0.0.1:8501. Mantener abierta la terminal; `Ctrl+C` detiene el
 servidor. Cargar un CSV o el ciclo de ejemplo y pulsar **Analizar datos**.
 
-**Esta versión usa Dummy provisionalmente:** devuelve siempre 90 bar para probar
-la interfaz. Sus respuestas y probabilidades no son un diagnóstico; el modelo
-definitivo se integrará en una etapa posterior.
+La aplicación carga el modelo **MLP+GA (semilla 42)** desde
+`models/pipeline_final.joblib`, junto con `labels.json` y `metadata_final.json`.
+Comprueba su integridad y versiones al cargarlo; no lo reentrena al abrir la app.
+Cada fila del CSV devuelve una categoría, sus probabilidades y la marca de baja
+confianza según `config.UMBRAL_CONFIANZA` (0,87). Si faltan los artefactos o no
+superan las comprobaciones, muestra el error y detiene el análisis.
