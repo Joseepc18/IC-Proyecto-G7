@@ -1,6 +1,6 @@
 # Aporte de José al informe técnico: Metodología de optimización (borrador, 23/oct/2026)
 
-Este texto cubre la metodología de optimización de hiperparámetros, la selección del modelo final, el umbral de baja confianza y la explicación difusa. Las cifras proceden de `reports/resultados.csv`, `reports/resultados_jose.csv`, `reports/pliegues_jose.csv` y de los notebooks `03_metaheuristica`, `04_umbral_confianza` y `05_explicacion_difusa`. Todo se calculó con los 1.827 ciclos de entrenamiento: la prueba reservada no se cargó ni se consultó. Las marcas «[POR VERIFICAR: ...]» señalan datos que faltan.
+Este texto cubre la metodología de optimización de hiperparámetros, la selección del modelo final, el umbral de baja confianza y la explicación difusa. Las cifras proceden de `reports/resultados.csv`, `reports/resultados_jose.csv`, `reports/pliegues_jose.csv` y de los notebooks `03_metaheuristica`, `04_umbral_confianza` y `05_explicacion_difusa`. Todo se calculó con los 1.827 ciclos de entrenamiento: la prueba reservada no se cargó ni se consultó.
 
 ## Metodología (optimización)
 
@@ -77,7 +77,7 @@ Sus límites: solo orienta «130 bar» frente a «menos de 130 bar», porque las
 
 La búsqueda y la evaluación comparten pliegues y el modelo final es el mejor de las nueve corridas de MLP, por lo que sus cifras de validación cruzada pueden ser optimistas; la única estimación independiente es la prueba reservada. Hay solo tres corridas por método, con 100 evaluaciones, población de 10 y operadores sin ajustar: la conclusión sobre el GA vale para este presupuesto y este espacio, sin prueba estadística formal, y el criterio (c) compara con la desviación entre pliegues, que no mide la variación entre corridas. Tres combinaciones suman 672 ciclos (el 30 % del total y el 36,8 % del entrenamiento) y cada una domina un pliegue, lo que explica desviaciones entre pliegues de 0,05 a 0,09 y obliga a leer los resultados por pliegue. Los datos vienen de un único banco de laboratorio con 144 combinaciones; no se probó otra instalación.
 
-El sondeo de `max_iter` cubre las esquinas del espacio, no todos sus puntos; la ausencia de avisos se comprobó en las evaluaciones realmente ejecutadas. La MLP «por defecto» usa `max_iter=4000` y no el 200 estándar, que no converge. Los tiempos de entrenamiento se midieron con tres procesos en paralelo y no son comparables con los de otros modelos. Las trazas de las 100 evaluaciones no se guardaron en archivos y no se pueden auditar sin reejecutar (unos 90 minutos). [POR VERIFICAR: CPU, RAM y sistema operativo del equipo donde se ejecutó `03_metaheuristica` (el notebook solo indica 12 hilos lógicos); el contrato pide anotarlos en el informe.]
+El sondeo de `max_iter` cubre las esquinas del espacio, no todos sus puntos; la ausencia de avisos se comprobó en las evaluaciones realmente ejecutadas. La MLP «por defecto» usa `max_iter=4000` y no el 200 estándar, que no converge. Los tiempos de entrenamiento se midieron con tres procesos en paralelo y no son comparables con los de otros modelos. Las trazas de las 100 evaluaciones no se guardaron en archivos y no se pueden auditar sin reejecutar (unos 90 minutos). Equipo de ejecución: procesador AMD Ryzen 7 7445HS (6 núcleos, 12 hilos lógicos), 15,2 GB de RAM y Windows 11 Home.
 
 ## Referencias citadas
 
@@ -86,7 +86,3 @@ Estilo autor–año; formatos tal como en `reports/borrador_jose_antecedentes.md
 - Bergstra, J., & Bengio, Y. (2012). Random search for hyper-parameter optimization. *JMLR, 13*, 281–305. https://jmlr.org/papers/v13/bergstra12a.html
 - Gad, A. F. (2024). PyGAD: An intuitive genetic algorithm Python library. *Multimedia Tools and Applications, 83*(20), 58029–58042. https://doi.org/10.1007/s11042-023-17167-y
 - Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. *JMLR, 12*, 2825–2830. https://jmlr.org/papers/v12/pedregosa11a.html
-
-## Datos por verificar antes de ensamblar
-
-- Hardware del equipo de ejecución de `03_metaheuristica` (ver sección 8).
