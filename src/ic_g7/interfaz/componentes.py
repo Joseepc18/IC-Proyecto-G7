@@ -38,8 +38,8 @@ def cabecera():
     *primeras, ultima = config.CLASE_POR_OBJETIVO
     st.html(
         '<div class="ui-encabezado"><div><h1>Estado del acumulador hidráulico</h1>'
-        '<p>Carga un ciclo de sensores para evaluar el estado del acumulador.</p>'
-        '</div><span class="ui-badge ui-badge-prueba">Versión de prueba</span></div>'
+        '<p>Carga un CSV de sensores para evaluar el estado del acumulador.</p>'
+        '</div><span class="ui-badge ui-badge-prueba">MLP + GA</span></div>'
         '<div class="ui-estadisticas">'
         + "".join(
             f'<div class="ui-estadistica"><span class="ui-icon-box">{icono(ico)}</span>'
@@ -148,8 +148,8 @@ def validacion(datos, error):
 
 
 def respuesta(resultado):
-    """Presenta el resultado sin confundir la salida de Dummy con un diagnóstico."""
-    titulo_panel("Respuesta del acumulador", "acumulador", detalle="Demostración")
+    """Muestra la estimación del modelo final por ciclo y permite descargarla."""
+    titulo_panel("Respuesta del acumulador", "acumulador", detalle="MLP + GA")
     if len(resultado) == 1:
         fila = resultado.iloc[0]
         nombres = {
@@ -163,31 +163,31 @@ def respuesta(resultado):
                 '<div class="ui-resultado"><span>Categoría estimada</span>'
                 f'<strong>{bar}<small> bar</small></strong>'
                 f'<p>{nombres[bar]}</p><span class="ui-badge">'
-                "Salida provisional</span></div>"
+                "Modelo final</span></div>"
             )
         with derecha:
             probabilidades = pd.DataFrame({
                 "Categoría": [f"{bar} bar" for bar in config.CLASE_POR_OBJETIVO],
-                "Probabilidad provisional": [
+                "Probabilidad": [
                     f'{fila[f"{bar} bar (%)"]:.1f} %'
                     for bar in config.CLASE_POR_OBJETIVO
                 ],
             })
             st.dataframe(probabilidades, hide_index=True, width="stretch")
     else:
-        st.write(f"Resultados provisionales para {len(resultado)} ciclos.")
+        st.write(f"Resultados para {len(resultado)} ciclos.")
         st.dataframe(resultado, hide_index=True, width="stretch")
 
     st.caption(
-        "Salida de demostración generada con Dummy. No representa un diagnóstico; "
-        "un 100 % en esta versión no significa certeza."
+        "Estimación del modelo MLP + GA. Las probabilidades no garantizan certeza; "
+        "el resultado apoya la revisión del acumulador."
     )
     if resultado["Baja confianza"].any():
         st.warning("Hay registros cuya probabilidad máxima está bajo el umbral.")
     st.download_button(
         "Descargar resultados",
         data=resultado.to_csv(index=False).encode("utf-8"),
-        file_name="resultados_dummy.csv",
+        file_name="resultados_acumulador.csv",
         mime="text/csv", on_click="ignore",
         icon=":material/download:",
     )

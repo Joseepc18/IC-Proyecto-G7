@@ -1,34 +1,13 @@
-"""Carga, validación y predicción del prototipo provisional.
-
-Se utiliza exclusivamente entrenamiento. Dummy sirve para probar la aplicación;
-no aprende patrones de sensores y no representa el modelo final del proyecto.
-"""
+"""Lectura y validación del CSV de sensores para la aplicación."""
 import csv
 import io
 
 import numpy as np
 import pandas as pd
-from sklearn.dummy import DummyClassifier
-from sklearn.pipeline import Pipeline
 
 from ic_g7 import config
-from ic_g7.datos import cargar_entrenamiento
 
 MAX_BYTES_CSV = 5 * 1024 * 1024
-
-
-def preparar_prototipo():
-    """Devuelve el pipeline Dummy, las entradas de entrenamiento y sus límites."""
-    X, y, _ = cargar_entrenamiento()
-    modelo = Pipeline([
-        ("modelo", DummyClassifier(
-            strategy="most_frequent", random_state=config.RANDOM_STATE
-        )),
-    ])
-    modelo.fit(X, y)
-    # Los límites nunca se calculan con los ciclos reservados para prueba.
-    limites = pd.DataFrame({"minimo": X.min(), "maximo": X.max()})
-    return modelo, X, limites
 
 
 def _primera_celda(mascara: pd.DataFrame) -> str:
@@ -125,22 +104,3 @@ def validar_csv(contenido: bytes, limites: pd.DataFrame) -> pd.DataFrame:
             f"Rango permitido: [{minimo:.8g}, {maximo:.8g}]."
         )
     return numeros.astype(float)
-
-
-def predecir_provisional(modelo, X: pd.DataFrame) -> pd.DataFrame:
-    """Presenta las salidas de Dummy; las probabilidades no indican fiabilidad."""
-    clases = modelo.predict(X)
-    probabilidades = modelo.predict_proba(X)
-    presion_por_clase = {clase: bar for bar, clase in config.CLASE_POR_OBJETIVO.items()}
-    salida = pd.DataFrame({
-        "Registro": np.arange(1, len(X) + 1),
-        "Acumulador (bar)": [presion_por_clase[int(c)] for c in clases],
-        "Estado": [
-            config.NOMBRE_CLASE[int(c)].replace("_", " ") for c in clases
-        ],
-        "Baja confianza": probabilidades.max(axis=1) < config.UMBRAL_CONFIANZA,
-    })
-    for indice, clase in enumerate(modelo.classes_):
-        bar = presion_por_clase[int(clase)]
-        salida[f"{bar} bar (%)"] = probabilidades[:, indice] * 100
-    return salida
