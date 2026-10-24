@@ -120,7 +120,7 @@ def vista_previa(datos):
             st.caption("Se muestran los primeros 10 ciclos.")
 
 
-def validacion(datos, error):
+def validacion(datos, error, fuera=None):
     titulo_panel("Validación de datos", "check")
     if error:
         st.html('<div class="ui-estado-error">Revisa el archivo para continuar.</div>')
@@ -130,7 +130,7 @@ def validacion(datos, error):
     textos = (
         ["Archivo CSV válido", "68 características detectadas",
          "Formato de columnas correcto", "Sin valores faltantes",
-         "Valores numéricos dentro de rango"]
+         "Valores numéricos finitos"]
         if correcta else
         ["Archivo CSV pendiente", "Se esperan 68 características",
          "La validación se realiza al cargar los datos"]
@@ -145,6 +145,13 @@ def validacion(datos, error):
         )
         + "</ul>"
     )
+    if correcta and fuera is not None and fuera.to_numpy().any():
+        n = int(fuera.any(axis=1).sum())
+        st.warning(
+            f"{n} de {len(datos)} ciclo(s) con valores fuera del rango de entrenamiento. "
+            "Puedes analizarlos, pero la estimación puede ser menos fiable aunque "
+            "el modelo muestre una probabilidad alta."
+        )
 
 
 def respuesta(resultado):
@@ -165,6 +172,8 @@ def respuesta(resultado):
                 f'<p>{nombres[bar]}</p><span class="ui-badge">'
                 "Modelo final</span></div>"
             )
+            if fila["Fuera de rango"]:
+                st.caption("⚠ Este ciclo está fuera del rango de entrenamiento.")
         with derecha:
             probabilidades = pd.DataFrame({
                 "Categoría": [f"{bar} bar" for bar in config.CLASE_POR_OBJETIVO],
@@ -174,16 +183,26 @@ def respuesta(resultado):
                 ],
             })
             st.dataframe(probabilidades, hide_index=True, width="stretch")
+        st.markdown("**Qué sugieren los sensores**")
+        st.write(fila["Lectura de sensores"])
     else:
         st.write(f"Resultados para {len(resultado)} ciclos.")
         st.dataframe(resultado, hide_index=True, width="stretch")
+        with st.expander("Leer explicación por ciclo"):
+            registro = st.selectbox("Ciclo", resultado["Registro"].tolist(), key="ciclo_explicacion")
+            fila = resultado.loc[resultado["Registro"] == registro].iloc[0]
+            st.write(fila["Lectura de sensores"])
 
     st.caption(
         "Estimación del modelo MLP + GA. Las probabilidades no garantizan certeza; "
-        "el resultado apoya la revisión del acumulador."
+        "la lectura difusa describe tendencias y puede diferir de la predicción."
     )
     if resultado["Baja confianza"].any():
-        st.warning("Hay registros cuya probabilidad máxima está bajo el umbral.")
+        n = int(resultado["Baja confianza"].sum())
+        st.warning(
+            f"{n} ciclo(s) con baja confianza: probabilidad máxima inferior "
+            f"al {config.UMBRAL_CONFIANZA:.0%}. Revisa sus resultados."
+        )
     st.download_button(
         "Descargar resultados",
         data=resultado.to_csv(index=False).encode("utf-8"),

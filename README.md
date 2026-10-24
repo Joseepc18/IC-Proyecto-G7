@@ -87,11 +87,15 @@ El archivo se rechaza completo, sin predicción, si:
 - Faltan columnas, sobran columnas o hay nombres duplicados.
 - Alguna fila tiene una cantidad incorrecta de campos.
 - Hay valores nulos, no numéricos o infinitos.
-- Hay valores fuera del rango de entrenamiento, con una tolerancia mínima por
-  redondeo numérico.
 
 La app muestra el motivo del rechazo y, cuando corresponde, el registro y la
-columna afectados. Los rangos se calculan exclusivamente con entrenamiento.
+columna afectados.
+
+Los valores numéricos finitos fuera del rango de entrenamiento **no bloquean el
+análisis**: se muestra una advertencia y se marca cada ciclo afectado como
+`Fuera de rango`, también en la descarga. No se recortan ni modifican los valores.
+Estos rangos proceden exclusivamente del entrenamiento y no son límites físicos
+del equipo. Se conserva una tolerancia mínima por redondeo numérico.
 
 ## Experimentos de Random Forest y MLP
 
@@ -227,5 +231,11 @@ La aplicación carga el modelo **MLP+GA (semilla 42)** desde
 `models/pipeline_final.joblib`, junto con `labels.json` y `metadata_final.json`.
 Comprueba su integridad y versiones al cargarlo; no lo reentrena al abrir la app.
 Cada fila del CSV devuelve una categoría, sus probabilidades y la marca de baja
-confianza según `config.UMBRAL_CONFIANZA` (0,87). Si faltan los artefactos o no
-superan las comprobaciones, muestra el error y detiene el análisis.
+confianza según `config.UMBRAL_CONFIANZA` (0,87). También incluye una lectura
+difusa de `PS5_max`, `PS3_mean` y `PS1_mean`, con percentiles calculados solo desde
+entrenamiento al cargar los recursos. La lectura describe tendencias; no explica
+el funcionamiento interno de la MLP ni cambia su predicción. Si discrepa con la
+clase estimada, lo indica. Con varios ciclos se puede leer la explicación de cada
+uno y descargarla junto a las probabilidades y las marcas de advertencia.
+Si faltan los artefactos o no superan las comprobaciones, muestra el error y
+detiene el análisis.
