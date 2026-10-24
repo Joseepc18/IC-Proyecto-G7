@@ -25,7 +25,7 @@ Se usa PyGAD 3.9.2 (Gad, 2024) con población de 10, 9 generaciones, 4 padres po
 
 ### 3. Línea de comparación
 
-`RandomizedSearchCV` explora el mismo espacio con 100 iteraciones (`loguniform` en `alpha` y `learning_rate_init`, elección uniforme en las categorías), el mismo `Pipeline`, los mismos pliegues y `refit=False` (Bergstra y Bengio, 2012). Se añade la MLP por defecto de scikit-learn (100 neuronas, `alpha` 1e-4, tasa 1e-3, relu), sin búsqueda y solo con `max_iter=4000` y la semilla cambiados. Cada método se ejecutó tres veces, con las semillas 42, 43 y 44. Cada corrida tardó entre 28 y 44 minutos (tres semillas en paralelo); todas usaron exactamente 100 evaluaciones y ninguna emitió avisos de convergencia.
+`RandomizedSearchCV` explora el mismo espacio con 100 iteraciones (`loguniform` en `alpha` y `learning_rate_init`, elección uniforme en las categorías), el mismo `Pipeline`, los mismos pliegues y `refit=False` (Bergstra y Bengio, 2012). Se añade la MLP por defecto de scikit-learn (100 neuronas, `alpha` 1e-4, tasa 1e-3, relu), sin búsqueda y solo con `max_iter=4000` y la semilla cambiados. Cada método se ejecutó tres veces, con las semillas 42, 43 y 44. Cada corrida de los dos métodos de búsqueda usó exactamente 100 evaluaciones de CV, tardó entre 28 y 44 minutos (tres semillas en paralelo) y no emitió avisos de convergencia. La MLP por defecto se evaluó sin búsqueda (0 evaluaciones de búsqueda y unos 0,2 minutos por corrida). Las evaluaciones adicionales para reportar métricas no forman parte del presupuesto de búsqueda.
 
 | Método | F1 macro CV (media de 3 corridas) | Desv. entre corridas | Rango | Desv. entre pliegues (media de 3) |
 |---|---|---|---|---|
@@ -35,7 +35,7 @@ Se usa PyGAD 3.9.2 (Gad, 2024) con población de 10, 9 generaciones, 4 padres po
 
 ### 4. Validación y control de fugas
 
-Todas las evaluaciones usan `StratifiedGroupKFold` de cinco pliegues, con barajado y semilla 42 (`RANDOM_STATE` en `config.py`), estratificado por clase y agrupado por la combinación de estados de los cuatro componentes (111 grupos en entrenamiento). Ningún grupo está en dos pliegues, así que un ciclo nunca se valida con un modelo que vio ciclos casi idénticos. La métrica principal es el F1 macro (media y desviación poblacional entre pliegues, más los valores por pliegue); exactitud y ROC-AUC son secundarias.
+Todas las evaluaciones usan `StratifiedGroupKFold` de cinco pliegues, con barajado y semilla 42 (`RANDOM_STATE` en `config.py`), estratificado por clase y agrupado por la combinación de estados de los cuatro componentes (111 grupos en entrenamiento). Dentro de cada partición de la validación cruzada, ningún grupo está a la vez en el ajuste y en la validación, así que un ciclo nunca se valida con un modelo que vio ciclos casi idénticos; un mismo grupo sí participa en el ajuste de las otras particiones. La métrica principal es el F1 macro (media y desviación poblacional entre pliegues, más los valores por pliegue); exactitud y ROC-AUC son secundarias.
 
 Para evitar fugas: las variables se extraen ciclo a ciclo, sin etiquetas; los estados de los componentes, `stable`, `cycle_id` y `group_id` nunca son entradas; el `StandardScaler` y el filtro de correlación (|r| > 0,995) forman parte del `Pipeline` compartido y se ajustan en cada pliegue de entrenamiento; y la partición se guarda una sola vez en `split.csv`, con un pliegue de prueba elegido solo por su estructura antes de entrenar ningún modelo final. La prueba reservada no intervino en la búsqueda, la selección ni la calibración del umbral; se usará una sola vez con el modelo ya elegido.
 
@@ -71,7 +71,7 @@ Es una descripción de tendencias, no un clasificador. Usa tres variables de pre
 
 Hay dos reglas, activas con grado ≥ 0,5: «óptima» (las tres variables bajas, con el mínimo de los grados) y «menor» (alguna alta, con el máximo). En entrenamiento, la regla óptima se activa en 377 ciclos, el 73,7 % de ellos de 130 bar (base: 27,8 %); la menor, en 766, con un 9,7 % de 130 bar; en 684 no se activa ninguna.
 
-Sus límites: solo orienta «130 bar» frente a «menos de 130 bar», porque las tres variables solapan casi por completo 90, 100 y 115 bar. No explica a la MLP, que usa las 68 variables y no se inspecciona; la contradice en 100 de los 377 ciclos de la regla óptima (26,5 %) y en 33 de los 766 de la menor (4,3 %), y en esos casos la MLP acierta el 74,0 % y el 63,6 %: son avisos para revisar, no veredictos. Variables y reglas se eligieron mirando el entrenamiento etiquetado, y la asociación en un solo banco no prueba causalidad.
+Sus límites: solo orienta «130 bar» frente a «menos de 130 bar», porque las tres variables solapan casi por completo 90, 100 y 115 bar. No explica cómo decide la MLP: el pipeline recibe las 68 variables originales y la red trabaja con las que conserva el filtro de correlación, que se aprende en cada pliegue (en el modelo final guardado conserva 41), y la red no se inspecciona; la contradice en 100 de los 377 ciclos de la regla óptima (26,5 %) y en 33 de los 766 de la menor (4,3 %), y en esos casos la MLP acierta el 74,0 % y el 63,6 %: son avisos para revisar, no veredictos. Variables y reglas se eligieron mirando el entrenamiento etiquetado, y la asociación en un solo banco no prueba causalidad.
 
 ### 8. Limitaciones y amenazas a la validez
 
