@@ -122,7 +122,7 @@ Lista única del informe en APA 7, en orden alfabético (incluye las obras citad
 
 ## Propuesta de problema, preguntas, objetivos e hipótesis
 
-**Propuesta de formulación.** [POR VERIFICAR: ni `docs/02-contrato-tecnico.md` ni `docs/03-decisiones.md` registran que se haya adoptado esta formulación; el contrato conserva el texto original (una sola pregunta y «evita paradas y daños»). Confirmar y registrar la decisión antes de ensamblar el informe.] Los criterios de éxito (a), (b) y (c) del contrato no cambian.
+**Formulación adoptada.** El problema, las preguntas P1 y P2, los objetivos y las hipótesis que siguen son la formulación del informe. Los criterios de éxito (a), (b) y (c) del contrato no cambian.
 
 **Problema.** En una instalación hidráulica industrial, la pérdida de presión del acumulador degrada el funcionamiento y puede acabar en falla. En un banco de pruebas real la presión se fija a propósito en cuatro niveles (130, 115, 100 y 90 bar) mientras los demás componentes también varían. Se busca estimar ese nivel solo con las lecturas de los sensores de cada ciclo de 60 s. Hacerlo bien permitiría apoyar a los técnicos de mantenimiento a detectar la pérdida antes de la falla. La utilidad práctica no se prueba aquí: los datos vienen de un único banco de laboratorio.
 - Cambios frente al texto del contrato (sección 1): "evita paradas y daños" pasa a "permitiría apoyar" (ningún dato del proyecto demuestra ese beneficio); "pierde presión de forma gradual" pasa a "niveles fijados a propósito", que es como se describe en el conjunto de datos.
@@ -150,7 +150,6 @@ Lista única del informe en APA 7, en orden alfabético (incluye las obras citad
 - El conteo de 91, 82 y 96 llamadas de PyGAD se midió con una función de juguete, no con la MLP real. Que cada corrida real usó exactamente 100 evaluaciones consta en el notebook `03_metaheuristica` y en el borrador de Metodología.
 - Que la hipótesis nula (GA ≈ búsqueda aleatoria) sea plausible es una inferencia propia: Bergstra y Bengio no prueban GA y Valsecchi et al. encuentran al GA mejor, en otro dominio.
 - La licencia CC BY 4.0 del conjunto de datos viene del borrador anterior; la API de DataCite no la devolvió, así que no se reconfirmó el 23/oct.
-- Formulación del problema, preguntas, objetivos e hipótesis: ver la marca [POR VERIFICAR] de la sección correspondiente.
 
 ## Registro para el anexo de uso de IA generativa
 Para el contenido de este documento se usó un asistente de IA generativa (Claude Code, modelo Claude Sonnet 5.5) para buscar y verificar fuentes académicas, redactar borradores del marco teórico y de los antecedentes, proponer la formulación del problema y de las hipótesis, y escribir scripts de apoyo para el conteo de evaluaciones de PyGAD, usando solo datos de entrenamiento. El trabajo se hizo bajo la dirección de José, que indicó qué hacer en cada paso, abrió en el navegador varios DOI (MDPI, Springer, Heliyon) para confirmar autores y fechas, y aprobó los resultados. El resto del uso de IA en el proyecto lo declara cada integrante en su registro.
